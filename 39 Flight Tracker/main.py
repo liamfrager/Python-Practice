@@ -8,24 +8,25 @@ today = dt.date.today()
 search_frame = today + dt.timedelta(6*30)
 
 data_manager = DataManager()
-search_locations = data_manager.get_locations()
-for location in search_locations:
-    destination = location["iataCode"]
-    max_price = int(location["lowestPrice"])
-    flight_params = {
-        "fly_from": "BOS",
-        "fly_to": destination,
-        "date_from": today.strftime("%d/%m/%Y"),
-        "date_to": search_frame.strftime("%d/%m/%Y"),
-        "adults": 2,
-        "price_to": max_price,
-        "curr": "USD",
-    }
-    flight_search = FlightSearch()
-    flights = flight_search.search_flights(flight_params)
-    if len(flights) == 0:
-        print(f"There are no cheap flights to {destination} available right now.")
-    else:
-        notify = NotificationManager()
-        for flight in flights:
-            notify.notify_flight(flight)
+data_manager.update_iata_codes()
+# search_locations = data_manager.get_locations()
+# for location in search_locations:
+#     destination = location["iataCode"]
+#     max_price = int(location["lowestPrice"])
+#     flight_params = {
+#         "fly_from": "BOS",
+#         "fly_to": destination,
+#         "date_from": today.strftime("%d/%m/%Y"),
+#         "date_to": search_frame.strftime("%d/%m/%Y"),
+#         "adults": 2,
+#         "price_to": max_price,
+#         "curr": "USD",
+#     }
+#     flight_search = FlightSearch()
+#     flights = flight_search.search_flights(flight_params)
+#     if len(flights) == 0:
+#         print(f"There are no cheap flights to {destination} available right now.")
+#     else:
+#         notify = NotificationManager()
+#         for flight in flights:
+#             notify.notify_flight(flight)
