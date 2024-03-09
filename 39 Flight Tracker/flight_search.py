@@ -12,10 +12,11 @@ FLIGHT_API_KEY = os.environ["FLIGHT_API_KEY"]
 
 class FlightSearch:
     def search_flights(self, flight_params):
+        url = f"{FLIGHT_API_ENDPOINT}/v2/search"
         headers = {
             "apikey": FLIGHT_API_KEY
         }
-        res = req.get(FLIGHT_API_ENDPOINT,
+        res = req.get(url=url,
                       params=flight_params, headers=headers)
         res.raise_for_status()
         return res.json()["data"]
