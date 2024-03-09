@@ -1,7 +1,11 @@
 import requests as req
+import os as os
+from dotenv import load_dotenv
 
-SHEETY_API_ENDPOINT = "https://api.sheety.co/9bf8cf781d9f9676f8f8d29389c7b8af/flightDeals/users"
-SHEETY_BEARER_TOKEN = "Bearer FlIgHt SeCrEtS"
+load_dotenv()
+
+SHEETY_API_ENDPOINT = os.environ["SHEETY_API_ENDPOINT"]
+SHEETY_BEARER_TOKEN = os.environ["SHEETY_BEARER_TOKEN"]
 
 print("Welcome to Liam's Flight Club!")
 print("We find the best flight deals and email you.")
@@ -22,7 +26,7 @@ headers = {
 }
 
 if email == email2:
-    res = req.post(SHEETY_API_ENDPOINT, json=data, headers=headers)
+    res = req.post(f"{SHEETY_API_ENDPOINT}/users", json=data, headers=headers)
     res.raise_for_status()
     print(res)
     print("You're in the club! :)")
