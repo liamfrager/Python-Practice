@@ -40,7 +40,7 @@ class InstaFollower():
             Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB).perform()
 
         for _ in range(29):
-            time.sleep(.5)
+            time.sleep(1)
             ActionChains(driver).send_keys(
                 Keys.ENTER, Keys.TAB, Keys.TAB, Keys.TAB).perform()
 
