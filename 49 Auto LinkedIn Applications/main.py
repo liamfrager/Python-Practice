@@ -25,16 +25,15 @@ submit = driver.find_element(
 time.sleep(3)
 
 
-jobs = [driver.find_element(
-    By.XPATH, f"/html/body/div[5]/div[3]/div[4]/div/div/main/div/div[2]/div[1]/div/ul/li[{i+1}]/div/div/div/div[2]") for i in range(25)]
-jobs = [
-    job.find_elements(By.XPATH, ".//div").text
-    for job in jobs
-]
-print(jobs)
-all_jobs = []
-for job in jobs:
-    pass
+jobs = driver.find_elements(By.CLASS_NAME, "job-card-container")
 
-time.sleep(1000)
+with open('jobs.txt', mode='a') as file:
+    for job in jobs:
+        job = job.text.split("\n")
+        new_job = {}
+        new_job["title"] = job[0] if len(job) > 0 else None,
+        new_job["company"] = job[1] if len(job) > 1 else None,
+        new_job["location"] = job[2] if len(job) > 2 else None,
+        new_job["salary"] = job[3] if len(job) > 3 else None,
+        file.write(f"{new_job}\n")
 driver.quit()

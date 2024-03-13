@@ -1,0 +1,8 @@
+{'title': ('Ruby on Rails Engineer',), 'company': ('Aha!',), 'location': ('Oklahoma City, OK (Remote)',), 'salary': ('$100K/yr - $160K/yr',)}
+{'title': ('Ruby on Rails Engineer',), 'company': ('Aha!',), 'location': ('Arlington, VA (Remote)',), 'salary': ('$100K/yr - $160K/yr',)}
+{'title': ('Ruby on Rails Engineer',), 'company': ('Aha!',), 'location': ('Philadelphia, MS (Remote)',), 'salary': ('$100K/yr - $160K/yr',)}
+{'title': ('Ruby on Rails Engineer',), 'company': ('Aha!',), 'location': ('Portland, OR (Remote)',), 'salary': ('$100K/yr - $160K/yr',)}
+{'title': ('Ruby on Rails Engineer',), 'company': ('Aha!',), 'location': ('California, United States (Remote)',), 'salary': ('$100K/yr - $160K/yr',)}
+{'title': ('SAP Commerce Cloud UI Developer',), 'company': ('DMI (Digital Management, LLC)',), 'location': ('United States (Remote)',), 'salary': ('Medical, +1 benefit',)}
+{'title': ('Junior Web Developer',), 'company': ('Honest Digital',), 'location': ('United States (Remote)',), 'salary': ('$40K/yr - $60K/yr · Vision, Dental, 401(k), +3 benefits',)}
+{'title': ('Ruby on Rails Engineer',), 'company': ('Aha!',), 'location': ('Jacksonville, AR (Remote)',), 'salary': ('$100K/yr - $160K/yr',)}
