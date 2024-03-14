@@ -17,8 +17,6 @@ class InternetSpeedTwitterBot():
         options = webdriver.ChromeOptions()
         options.add_experimental_option("detach", True)
         self.driver = webdriver.Chrome(options=options)
-        self.down = ""
-        self.up = ""
 
     def get_internet_speed(self):
         self.driver.get(SPEED_TEST)
