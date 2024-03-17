@@ -1,17 +1,26 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect
 from flask_bootstrap import Bootstrap5
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import StringField, SubmitField, SelectField, TimeField, URLField
+from wtforms.validators import DataRequired, URL
 import csv
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-Bootstrap5(app)
+bootstrap = Bootstrap5(app)
 
 
 class CafeForm(FlaskForm):
     cafe = StringField('Cafe name', validators=[DataRequired()])
+    url = URLField(validators=[URL()])
+    open_time = TimeField()
+    closing_time = TimeField()
+    coffee_rating = SelectField(
+        choices=['☕️', '☕️☕️', '☕️☕️☕️', '☕️☕️☕️☕️', '☕️☕️☕️☕️☕️'])
+    wifi_rating = SelectField(
+        choices=['❌', '🛜', '🛜🛜', '🛜🛜🛜', '🛜🛜🛜🛜', '🛜🛜🛜🛜🛜'])
+    outlet_rating = SelectField(
+        choices=['❌', '🔌', '🔌🔌', '🔌🔌🔌', '🔌🔌🔌🔌', '🔌🔌🔌🔌🔌'])
     submit = SubmitField('Submit')
 
 # Exercise:
@@ -29,11 +38,25 @@ def home():
     return render_template("index.html")
 
 
-@app.route('/add')
+@app.route('/add', methods=["GET", "POST"])
 def add_cafe():
     form = CafeForm()
     if form.validate_on_submit():
-        print("True")
+        with open('cafe-data.csv', mode='a') as db:
+            print(form.data)
+            cafe = form.data['cafe']
+            url = form.data['url']
+            open_time = form.data['open_time'].strftime(
+                "%-I%p") if form.data['open_time'].minute == 0 else form.data['open_time'].strftime("%-I:%M%p")
+            closing_time = form.data['closing_time'].strftime(
+                "%-I%p") if form.data['closing_time'].minute == 0 else form.data['closing_time'].strftime("%-I:%M%p")
+            coffee_rating = form.data['coffee_rating']
+            wifi_rating = form.data['wifi_rating']
+            outlet_rating = form.data['outlet_rating']
+            new_row = f"\n{cafe},{url},{open_time},{closing_time},{
+                coffee_rating},{wifi_rating},{outlet_rating}"
+            db.write(new_row)
+            return redirect('/cafes')
     # Exercise:
     # Make the form write a new row into cafe-data.csv
     # with   if form.validate_on_submit()
@@ -51,4 +74,4 @@ def cafes():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=4000)
