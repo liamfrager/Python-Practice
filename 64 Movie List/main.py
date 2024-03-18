@@ -7,10 +7,14 @@ from sqlalchemy.exc import IntegrityError
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from dotenv import load_dotenv
+import os
 import requests as req
 
-MOVIE_API_URL = "https://api.themoviedb.org/3"
 
+load_dotenv()
+BEARER_TOKEN = os.environ["BEARER_TOKEN"]
+MOVIE_API_URL = "https://api.themoviedb.org/3"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -81,7 +85,7 @@ def add():
     # Searched for movie
     if form.validate_on_submit():
         headers = {
-            "Authorization": f"Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmYTVkNTRmYWU5OGQ5YjBkYWFiMzAzZTVhNzgwNmM1NiIsInN1YiI6IjY1Zjc2MmJhNTk0Yzk0MDE0OTM2YjU3YSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.03AbVlXr50GeVjitEgtgAzgbtmxMoJ1dLqfYRX_CfBg"
+            "Authorization": f"Bearer {BEARER_TOKEN}"
         }
         params = {
             'query': form.query.data
@@ -98,7 +102,7 @@ def add():
         if request.args.get('id'):
             movie_id = request.args.get('id')
             headers = {
-                "Authorization": f"Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmYTVkNTRmYWU5OGQ5YjBkYWFiMzAzZTVhNzgwNmM1NiIsInN1YiI6IjY1Zjc2MmJhNTk0Yzk0MDE0OTM2YjU3YSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.03AbVlXr50GeVjitEgtgAzgbtmxMoJ1dLqfYRX_CfBg",
+                "Authorization": f"Bearer {BEARER_TOKEN}",
                 "accept": "application/json",
             }
             params = {
