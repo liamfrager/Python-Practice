@@ -16,34 +16,41 @@ def clear_console():
 
 def get_input():
     # INPUT
-    print(logo)
     input_ = input(
         'What would you like to say in Morse Code?: ').lower().strip()
     output = ""
-    for char in input_:
-        if char == " ":
-            output += "\n"
-        else:
-            output += dictionary[char] + "  "
-
-    input_ = input_.split()
-    output = output.split('\n')
-
-    # OUTPUT
-    clear_console()
-    print(logo)
-    print('\nHere is your message in Morse Code:\n')
-    for i in range(len(output)):
-        print(input_[i].upper())
-        print(f'   {output[i]}')
-
-    again = input(
-        '\nWould you like to translate another phrase? (Y/N) ').lower()
-    if again == 'y':
+    try:
+        for char in input_:
+            if char == " ":
+                output += "\n"
+            else:
+                output += dictionary[char] + "  "
+    except KeyError as err:
         clear_console()
+        print(logo)
+        print(f'You used an invalid character: {err}\nPlease try again.\n')
         get_input()
     else:
-        print('Good bye!')
+        input_ = input_.split()
+        output = output.split('\n')
+
+        # OUTPUT
+        clear_console()
+        print(logo)
+        print('\nHere is your message in Morse Code:\n')
+        for i in range(len(output)):
+            print(input_[i].upper())
+            print(f'   {output[i]}')
+
+        again = input(
+            '\nWould you like to translate another phrase? (Y/N) ').lower()
+        if again == 'y':
+            clear_console()
+            print(logo)
+            get_input()
+        else:
+            print('Goodbye!')
 
 
+print(logo)
 get_input()
