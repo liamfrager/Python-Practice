@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if project %}
+        <div class="row featurette">
+            <div class="col-md-5 order-md-1">
+                <img src="{{ project.img_url }}" class="rounded" alt="" height="300" width="300" style="overflow: hidden">
+            </div>
+            <div class="col-md-7 order-md-2 p-5">
+                <h1 class="featurette-heading fw-normal lh-1 pb-2">{{ project.title }}</h1>
+                <p class="lead">{{ project.description }}</p>
+            </div>
+        </div>
+        <hr>
+        <span>View my <code>code</code> on <a href="{{ 'https://github.com/liamfrager/python-practice/tree/main/' + project.git_endpoint }}">GitHub</a></span>
+    {% elif projects %}
+        {% for project in projects[::-1] %}
+            <a href="{{ url_for('projects', id=project.id)}}" class="text-decoration-none">
+                <div class="container my-5">
+                    <div class="bg-body-tertiary rounded-3 d-flex flex-row justify-content-between overflow-hidden" style="height: 200px">
+                        <div class="p-5">
+                            <h1 class="text-body-emphasis">{{ project.title }}</h1>
+                            <p class="lead">{{ project.description[:100] }}</p>
+                        </div>
+                        <div style="width: 50%">
+                            <img src="{{ project.img_url }}" alt="">
+                        </div>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    {% else %}
+    <div class="alert alert-danger" role="alert">
+        Could not load any projects.
+    </div>
+    {% endif %}
+{% endblock %}

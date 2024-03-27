@@ -1,0 +1,23 @@
+<header class="d-flex flex-wrap justify-content-center py-3 mb-4">
+  <nav class="navbar navbar-expand-md navbar-light fixed-top bg-light border-bottom">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home') }}">
+        <img class="bi me-2" width="40" height="40" src="{{ url_for('static', filename='img/favicon.png')}}" alt="">
+        <span class="fs-4">Liam Frager</span>
+      </a>
+    </div>
+    <div class="container ml-auto">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="nav nav-pills">
+          <li class="nav-item"><a href="{{ url_for('home') }}" class="nav-link active" aria-current="page">Home</a></li>
+          <li class="nav-item"><a href="{{ url_for('projects', id='all') }}" class="nav-link">Projects</a></li>
+          <!-- <li class="nav-item"><a href="{{ url_for('about') }}" class="nav-link">About</a></li> -->
+          <li class="nav-item"><a href="{{ url_for('contact') }}" class="nav-link">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>

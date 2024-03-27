@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if sent %}
+        <div class="alert alert-primary" role="alert">
+            Message sent!
+        </div>
+    {% endif %}
+    <h2 class="pb-4 mb-5 border-bottom">< Contact Me /></h2>
+    <form action="/contact" method="POST">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <input name="email" type="email" class="form-control" id="email" placeholder="name@email.com" required>
+        </div>
+        <div class="mb-3">
+            <label for="subject" class="form-label">Subject</label>
+            <input name="subject" type="text" class="form-control" id="subject" placeholder="Coding Message" required>
+        </div>
+        <div class="mb-3">
+            <label for="message" class="form-label">Message</label>
+            <textarea name="message" class="form-control" id="message" rows="5" required></textarea>
+        </div>
+        <input type="submit" class="btn btn-primary" value="Send Message">
+    </form>
+{% endblock %}
