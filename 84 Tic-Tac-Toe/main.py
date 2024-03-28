@@ -17,7 +17,7 @@ def new_game():
         '9': 9,
     }
 
-    def refresh_display():
+    def refresh_display(*args):
         # for windows
         if name == 'nt':
             __ = system('cls')
@@ -33,35 +33,41 @@ def new_game():
                 {_['7']} | {_['8']} | {_['9']}
                 '''
         print(board)
+        print(args[0] if args else '')
 
     def is_winning_move(move):
-        print(move)
-        ####################### CHECK IF MOVE WINS ##############################
+        rows = ['123', '456', '789', '147', '258', '369', '159', '357']
+        for row in rows:
+            if move in row:
+                spaces = [*row]
+                if _[spaces[0]] == _[spaces[1]] and _[spaces[1]] == _[spaces[2]]:
+                    return True
         return False
 
     player = 1
     valid_moves = 9
+    refresh_display()
     while True:
-        refresh_display()
         try:
-            move = int(
-                input(f'{'X' if player > 0 else 'O'}, where would you like to go?: '))
+            move = str(
+                int(input(f'{'X' if player > 0 else 'O'}, where would you like to go?: ')))
         except:
-            print('Not a valid move. Try again.')
+            refresh_display('Not a valid move. Try again.')
             continue
-        if str(move) in board:
-            _[str(move)] = 'X' if player > 0 else 'O'
+        if move in board:
+            _[move] = 'X' if player > 0 else 'O'
             player *= -1
             valid_moves -= 1
         else:
-            print('Not a valid move. Try again.')
-        if valid_moves == 0:
+            refresh_display('Not a valid move. Try again.')
+            continue
+        if valid_moves == 0 or is_winning_move(move):
             break
-        elif is_winning_move(move):
-            break
+        refresh_display()
 
     refresh_display()
-    print(f'Game over!')
+    print(f'Game over! {('X wins!' if player < 0 else 'O wins!')
+          if is_winning_move(move) else "It's a draw!"}')
     again = input('Would you like to play again? (Y/N) ').lower()
     if again == 'y':
         new_game()
