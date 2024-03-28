@@ -13,26 +13,26 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return render_template('index.html', projects=coding_projects)
+    return render_template('index.html', page='home', projects=coding_projects)
 
 
 @app.route('/projects/<id>')
 def projects(id):
     if id == 'all':
-        return render_template('projects.html', projects=coding_projects)
+        return render_template('projects.html', page='projects', projects=coding_projects)
     else:
-        return render_template('projects.html', project=coding_projects[int(id)])
+        return render_template('projects.html', page='projects', project=coding_projects[int(id)])
 
 
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    return render_template('about.html', page='about')
 
 
 @app.route('/contact', methods=["GET", "POST"])
 def contact():
     if request.method == "GET":
-        return render_template('contact.html')
+        return render_template('contact.html', page='contact')
     else:
         with smtplib.SMTP("smtp.gmail.com", port=587) as connection:
             connection.starttls()
@@ -45,7 +45,7 @@ def contact():
                 f"Subject: {request.form['subject']}\n"
                 f"Message:\n{request.form['message']}".encode("UTF-8")
             )
-        return render_template('contact.html', sent=True)
+        return render_template('contact.html', page='contact', sent=True)
 
 
 if __name__ == '__main__':
