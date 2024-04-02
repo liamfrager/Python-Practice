@@ -10,10 +10,8 @@ class Brick(Turtle):
         self.shape('square')
         self.shapesize(BRICK_WIDTH / 20, BRICK_HEIGHT / 20, 1)
         self.goto(
-            SCREEN_LEFT + (BRICK_WIDTH / 2) +
-            (col * (BRICK_WIDTH + BRICK_GAP)),
-            SCREEN_TOP - (BRICK_HEIGHT / 2) -
-            ((row + 3) * (BRICK_HEIGHT + BRICK_GAP))
+            x=SCREEN_LEFT + ((col + .5) * (BRICK_WIDTH + BRICK_GAP)),
+            y=SCREEN_TOP - ((row + 3.5) * (BRICK_HEIGHT + BRICK_GAP))
         )
 
     def destroy(self):
