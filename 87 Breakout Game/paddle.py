@@ -6,13 +6,17 @@ class Paddle(Turtle):
     def __init__(self):
         super().__init__()
         self.penup()
-        self.color('white')
+        self.color(PADDLE_COLOR)
         self.shape('square')
-        self. size = PADDLE_WIDTH
+        self.size = PADDLE_WIDTH
         self.to_starting_position()
 
     def shrink(self):
         self.size *= .5
+        self.shapesize(self.size / 40, PADDLE_HEIGHT / 20, 1)
+
+    def grow(self):
+        self.size *= 2
         self.shapesize(self.size / 40, PADDLE_HEIGHT / 20, 1)
 
     def to_starting_position(self):
@@ -28,6 +32,5 @@ class Paddle(Turtle):
             self.goto(self.xcor() + 20, self.ycor())
 
     def follow_cursor(self, x, y):
-        print(x, y)
-        if x > SCREEN_LEFT + (self.size + BRICK_HEIGHT + BRICK_GAP) / 2 and x < SCREEN_RIGHT - (self.size + BRICK_HEIGHT + BRICK_GAP) / 2:
+        if x > SCREEN_LEFT + (self.size) / 2 and x < SCREEN_RIGHT - (self.size) / 2:
             self.goto(x, self.ycor())
