@@ -1,0 +1,21 @@
+{% extends 'components/index.html' %}
+{% block content %}
+    <div class="row my-5">
+        <h1 class="col-2">My List</h1>
+        <a href="{{ url_for('add_cafe') }}" class="btn btn-primary col-2">Add Cafe</a>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for cafe in my_cafes %}
+            <div class="col">
+                <div class="card">
+                    <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#868e96"></rect><text x="50%" y="50%" fill="#dee2e6" dy=".3em">Image cap</text></svg>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ cafe.name }}</h5>
+                        <p class="card-text">{{ cafe.open_time.strftime('%-I:%M %p') }} — {{ cafe.close_time.strftime('%-I:%M %p') }}</p>
+                        <a href="{{ url_for('cafe', cafe_id=cafe.id) }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

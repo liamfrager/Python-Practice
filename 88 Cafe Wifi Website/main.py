@@ -1,19 +1,16 @@
-from typing import List
-import datetime
+
 from flask import Flask, flash, render_template, redirect, url_for, request
 from flask_bootstrap import Bootstrap5
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey, Integer, String, Time, Boolean
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from flask_login import login_user, LoginManager, login_required, current_user, logout_user
+from werkzeug.security import check_password_hash
 from sqlalchemy.exc import IntegrityError
 from forms import LoginForm, RegisterForm, CafeForm
+from db import db, db_func
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = 'morph'
+app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = 'flatly'
 bootstrap = Bootstrap5(app)
 
 # LOGIN MANAGEMENT
@@ -22,9 +19,7 @@ login_manager = LoginManager(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    user = db.session.execute(
-        db.select(User).where(User.id == user_id)).scalar()
-    return user
+    return db_func.get_user(id=user_id)
 
 
 @login_manager.unauthorized_handler
@@ -39,39 +34,8 @@ def error_401():
 
 
 # CREATE DATABASE
-class Base(DeclarativeBase):
-    pass
-
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafe-wifi.db'
-db = SQLAlchemy(model_class=Base)
 db.init_app(app)
-
-
-class User(db.Model, UserMixin):
-    __tablename__ = 'users'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(String(100), unique=True)
-    password: Mapped[str] = mapped_column(String(100))
-    name: Mapped[str] = mapped_column(String(1000))
-    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
-    cafes_added: Mapped[List["Cafe"]] = relationship(back_populates="added_by")
-
-
-class Cafe(db.Model):
-    __tablename__ = 'cafes'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True)
-    url: Mapped[str] = mapped_column(String(100))
-    open_time: Mapped[datetime.time] = mapped_column(Time)
-    close_time: Mapped[datetime.time] = mapped_column(Time)
-    coffee_rating: Mapped[int] = mapped_column(Integer)
-    wifi_rating: Mapped[int] = mapped_column(Integer)
-    outlet_rating: Mapped[int] = mapped_column(Integer)
-    added_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    added_by: Mapped["User"] = relationship(back_populates="cafes_added")
-
-
 with app.app_context():
     db.create_all()
 
@@ -87,8 +51,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         with app.app_context():
-            user = db.session.execute(
-                User.query.filter(User.email == form.data['email'])).scalar()
+            user = db_func.get_user(email=form.data['email'])
             if check_password_hash(user.password, form.data['password']):
                 login_user(user)
                 return redirect(url_for('all_cafes'))
@@ -108,17 +71,7 @@ def register():
     if form.validate_on_submit():
         try:
             with app.app_context():
-                new_user = User(
-                    email=form.data['email'],
-                    password=generate_password_hash(
-                        password=form.data['password'],
-                        method='pbkdf2:sha256',
-                        salt_length=8
-                    ),
-                    name=form.data['name'],
-                )
-                db.session.add(new_user)
-                db.session.commit()
+                new_user = db_func.add_user(form.data)
                 login_user(new_user)
             return redirect(url_for('home'))
         except IntegrityError:
@@ -131,14 +84,14 @@ def register():
 @app.route('/cafes')
 def all_cafes():
     with app.app_context():
-        cafes = Cafe.query.all()
+        cafes = db_func.get_all_cafes()
     return render_template('pages/all_cafes.html', cafes=cafes)
 
 
 @app.route('/cafe/<cafe_id>')
 def cafe(cafe_id):
     with app.app_context():
-        cafe = Cafe.query.filter(Cafe.id == cafe_id).scalar()
+        cafe = db_func.get_cafe(cafe_id)
         if cafe:
             return render_template('pages/cafe.html', cafe=cafe)
         else:
@@ -151,6 +104,13 @@ def cafe(cafe_id):
             )
 
 
+@app.route('/my-list')
+def my_list():
+    with app.app_context():
+        my_cafes = db_func.get_user_cafes(current_user.id)
+        return render_template('pages/my_list.html', my_cafes=my_cafes)
+
+
 @app.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_cafe():
@@ -158,21 +118,7 @@ def add_cafe():
     if form.validate_on_submit():
         try:
             with app.app_context():
-                new_cafe = Cafe(
-                    name=form.data['name'],
-                    url=form.data['url'],
-                    open_time=form.data['open_time'],
-                    close_time=form.data['close_time'],
-                    coffee_rating=0 if form.data['coffee_rating'] == '❌' else len(
-                        form.data['coffee_rating']),
-                    wifi_rating=0 if form.data['wifi_rating'] == '❌' else len(
-                        form.data['wifi_rating']),
-                    outlet_rating=0 if form.data['outlet_rating'] == '❌' else len(
-                        form.data['outlet_rating']),
-                    added_by_id=current_user.id
-                )
-                db.session.add(new_cafe)
-                db.session.commit()
+                db_func.add_cafe(form.data, current_user.id)
             return redirect(url_for('all_cafes'))
         except IntegrityError:
             flash('Cafe already exists.')
@@ -185,11 +131,11 @@ def add_cafe():
 @login_required
 def delete(cafe_id):
     with app.app_context():
-        cafe = Cafe.query.filter(Cafe.id == cafe_id).scalar()
+        cafe = db_func.get_cafe(cafe_id)
         if cafe:
-            if Cafe.added_by_id == current_user.id or current_user.is_admin:
-                db.session.delete(cafe)
-                db.session.commit()
+            if cafe.added_by_id == current_user.id or current_user.is_admin:
+                db_func.session.delete(cafe)
+                db_func.session.commit()
                 return redirect(url_for('all_cafes'))
             else:
                 return render_template(

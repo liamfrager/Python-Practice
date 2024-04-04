@@ -1,19 +1,51 @@
 {% extends 'components/index.html' %}
 {% block content %}
-    <h1>{{ cafe.name }}</h1>
-    <h3>{{ cafe.name }}</h3>
-    <ul class="list-group list-group-flush">
-        {% for stat in [cafe.coffee_rating, cafe.wifi_rating, cafe.outlet_rating] %}
-            {% with width = 5 / stat %}
-                <div class="progress">
-                    <div class="progress-bar w-{{ width }}" role="progressbar" aria-valuenow="{{ width }}" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-            {% endwith %}
-        {% endfor %}
-        <li class="list-group-item">{{ cafe }}</li>
-        <li class="list-group-item">A second item</li>
-        <li class="list-group-item">A third item</li>
-        <li class="list-group-item">A fourth item</li>
-        <li class="list-group-item">And a fifth one</li>
-    </ul>
+  <h1>{{ cafe.name }}</h1>
+  <h3>{{ cafe.location }}</h3>
+    {% for stat in cafe.stats %}
+      <div class="row py-2 text-center">
+        <div class="col-1">{{ stat.name }}</div>
+        <span class="col-11">
+          {% with width = 20 * stat.rating %}
+            <div class="progress">
+              <div class="progress-bar w-{{ width }} bg-{{ {'☕️': 'danger', '🛜': 'info', '🔌': 'warning'}[stat.name] }}" role="progressbar" aria-valuenow="{{ width }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          {% endwith %}
+        </span>
+      </div>
+    {% endfor %}
+    {% if cafe.images %}
+    <div class="row d-flex justify-content-center">
+      <div id="carouselPhotos" class="carousel slide my-5 col-10" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselPhotos" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          {% for url in cafe.images[1:] %}
+            <button type="button" data-bs-target="#carouselPhotos" data-bs-slide-to="{{ cafe.images.index(url) }}" aria-label="Slide {{ cafe.images.index(url) + 1}}"></button>
+          {% endfor %}
+        </div>
+        <div class="carousel-inner">
+          {% for url in cafe.images %}
+            <div class="carousel-item {{ 'active' if cafe.images.index(url) == 0 else ''}}">
+              <img src="{{ url }}" class="d-block w-100" alt="">
+            </div>
+          {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselPhotos" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselPhotos" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+    {% endif %}
+    {% if cafe.menu_link %}
+      <div class="d-flex justify-content-center">
+        <a href="{{ cafe.menu_link }}" target="_blank">
+        <button class="btn btn-info my-3">Click here to see a menu.</button>
+      </a>
+      </div>
+    {% endif %}
 {% endblock %}
