@@ -4,10 +4,10 @@ from wtforms.validators import DataRequired, URL, Email
 
 
 class CafeForm(FlaskForm):
-    cafe = StringField('Cafe name', validators=[DataRequired()])
+    name = StringField('Cafe name', validators=[DataRequired()])
     url = URLField(validators=[URL()])
     open_time = TimeField()
-    closing_time = TimeField()
+    close_time = TimeField()
     coffee_rating = SelectField(
         choices=['☕️', '☕️☕️', '☕️☕️☕️', '☕️☕️☕️☕️', '☕️☕️☕️☕️☕️'])
     wifi_rating = SelectField(

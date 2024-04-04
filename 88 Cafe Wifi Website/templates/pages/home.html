@@ -1,4 +1,7 @@
 {% extends 'components/index.html' %}
 {% block content %}
     <h1>Hello, World!</h1>
+
+    <a href="{{ url_for('all_cafes') }}" class="btn btn-primary btn-lg">Browse Cafes</a>
+    <a href="{{ url_for('add_cafe') }}" class="btn btn-secondary btn-lg">Add Cafe</a>
 {% endblock %}

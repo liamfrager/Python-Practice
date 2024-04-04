@@ -3,5 +3,6 @@
 {% extends 'components/index.html' %}
 {% block content %}
     <h1>Hello, Register!</h1>
+    {% include 'components/flash_messages.html' %}
     {{ render_form(form, novalidate=true) }}
 {% endblock %}

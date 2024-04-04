@@ -1,0 +1,19 @@
+{% extends 'components/index.html' %}
+{% block content %}
+    <h1>{{ cafe.name }}</h1>
+    <h3>{{ cafe.name }}</h3>
+    <ul class="list-group list-group-flush">
+        {% for stat in [cafe.coffee_rating, cafe.wifi_rating, cafe.outlet_rating] %}
+            {% with width = 5 / stat %}
+                <div class="progress">
+                    <div class="progress-bar w-{{ width }}" role="progressbar" aria-valuenow="{{ width }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            {% endwith %}
+        {% endfor %}
+        <li class="list-group-item">{{ cafe }}</li>
+        <li class="list-group-item">A second item</li>
+        <li class="list-group-item">A third item</li>
+        <li class="list-group-item">A fourth item</li>
+        <li class="list-group-item">And a fifth one</li>
+    </ul>
+{% endblock %}
