@@ -52,7 +52,7 @@ def login():
     if form.validate_on_submit():
         with app.app_context():
             user = db_func.get_user(email=form.data['email'])
-            if check_password_hash(user.password, form.data['password']):
+            if user and check_password_hash(user.password, form.data['password']):
                 login_user(user)
                 return redirect(url_for('all_cafes'))
             else:
@@ -85,7 +85,7 @@ def register():
 def all_cafes():
     with app.app_context():
         cafes = db_func.get_all_cafes()
-    return render_template('pages/all_cafes.html', cafes=cafes)
+    return render_template('pages/cafes.html', cafes=cafes)
 
 
 @app.route('/cafe/<cafe_id>')
@@ -108,7 +108,7 @@ def cafe(cafe_id):
 def my_list():
     with app.app_context():
         my_cafes = db_func.get_user_cafes(current_user.id)
-        return render_template('pages/my_list.html', my_cafes=my_cafes)
+        return render_template('pages/cafes.html', cafes=my_cafes)
 
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -134,8 +134,7 @@ def delete(cafe_id):
         cafe = db_func.get_cafe(cafe_id)
         if cafe:
             if cafe.added_by_id == current_user.id or current_user.is_admin:
-                db_func.session.delete(cafe)
-                db_func.session.commit()
+                db_func.delete_cafe(cafe)
                 return redirect(url_for('all_cafes'))
             else:
                 return render_template(
@@ -165,5 +164,4 @@ def logout():
 if __name__ == '__main__':
     app.run(port=4000, debug=True)
 
-# TODO: Beautify w/ Bootstrap
-# TODO: Add favorite cafes
+# TODO: fix wrong email bug

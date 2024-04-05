@@ -1,0 +1,31 @@
+<div class="container">
+  <footer class="py-3 my-4">
+    <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+        <li class="nav-item">
+          <a class="nav-link px-2 text-body-secondary" href="{{ url_for('home') }}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-2 text-body-secondary" href="{{ url_for('all_cafes') }}">Cafes</a>
+        </li>
+        {% if current_user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link px-2 text-body-secondary" href="{{ url_for('my_list') }}">My List</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-2 text-body-secondary" href="{{ url_for('logout') }}">Logout</a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link px-2 text-body-secondary" href="{{ url_for('login') }}">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-2 text-body-secondary" href="{{ url_for('register') }}">Register</a>
+        </li>
+        {% endif %}
+    </ul>
+    <p class="text-center text-body-secondary">© <span id="currYear"></span> Liam Frager</p>
+  </footer>
+</div>
+<script>
+    document.getElementById('currYear').innerText = new Date().getFullYear()
+</script>

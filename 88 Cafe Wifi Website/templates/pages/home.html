@@ -1,7 +1,19 @@
 {% extends 'components/index.html' %}
 {% block content %}
-    <h1>Hello, World!</h1>
-
-    <a href="{{ url_for('all_cafes') }}" class="btn btn-primary btn-lg">Browse Cafes</a>
-    <a href="{{ url_for('add_cafe') }}" class="btn btn-secondary btn-lg">Add Cafe</a>
+    <div class="px-4 py-5 my-5 text-center">
+        <i class="bi bi-cup-hot-fill h1"></i>
+        <h1 class="display-5 fw-bold text-body-emphasis my-5">Welcome to the Cafe Database</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead my-4">Browse loads of cafes submitted by users. Find new favorite spots to relax, meet with friends, or get work done!</p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('all_cafes') }}" class="btn btn-primary btn-lg">Browse Cafes</a>
+                <a href="{{ url_for('add_cafe') }}" class="btn btn-secondary btn-lg">Add Cafe</a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-secondary btn-lg">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 {% endblock %}

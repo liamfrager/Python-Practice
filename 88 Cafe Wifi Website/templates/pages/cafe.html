@@ -1,51 +1,72 @@
 {% extends 'components/index.html' %}
 {% block content %}
   <h1>{{ cafe.name }}</h1>
-  <h3>{{ cafe.location }}</h3>
+  <p class="card-text">{{ cafe.open_time.strftime('%-I:%M %p') }} — {{ cafe.close_time.strftime('%-I:%M %p') }}</p>
     {% for stat in cafe.stats %}
       <div class="row py-2 text-center">
-        <div class="col-1">{{ stat.name }}</div>
-        <span class="col-11">
+        <div class="col-1">{{ stat.icon }}</div>
+        <div class="col-1">{{ stat.rating }}/5</div>
+        <span class="col-10">
           {% with width = 20 * stat.rating %}
             <div class="progress">
-              <div class="progress-bar w-{{ width }} bg-{{ {'☕️': 'danger', '🛜': 'info', '🔌': 'warning'}[stat.name] }}" role="progressbar" aria-valuenow="{{ width }}" aria-valuemin="0" aria-valuemax="100"></div>
+              <div class="progress-bar progress-bar-striped bg-{{ stat.color }}" style="width: {{ width }}%" role="progressbar" aria-valuenow="{{ width }}" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
           {% endwith %}
         </span>
       </div>
     {% endfor %}
     {% if cafe.images %}
-    <div class="row d-flex justify-content-center">
-      <div id="carouselPhotos" class="carousel slide my-5 col-10" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselPhotos" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-          {% for url in cafe.images[1:] %}
-            <button type="button" data-bs-target="#carouselPhotos" data-bs-slide-to="{{ cafe.images.index(url) }}" aria-label="Slide {{ cafe.images.index(url) + 1}}"></button>
-          {% endfor %}
+      <div class="row d-flex justify-content-center">
+        <div id="carouselPhotos" class="carousel slide my-5 col-10" data-bs-ride="carousel">
+          <div class="carousel-indicators">
+              <button type="button" data-bs-target="#carouselPhotos" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            {% for url in cafe.images[1:] %}
+              <button type="button" data-bs-target="#carouselPhotos" data-bs-slide-to="{{ cafe.images.index(url) }}" aria-label="Slide {{ cafe.images.index(url) + 1}}"></button>
+            {% endfor %}
+          </div>
+          <div class="carousel-inner">
+            {% for url in cafe.images %}
+              <div class="carousel-item {{ 'active' if cafe.images.index(url) == 0 else ''}}">
+                <img src="{{ url }}" class="d-block w-100" alt="">
+              </div>
+            {% endfor %}
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselPhotos" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselPhotos" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
         </div>
-        <div class="carousel-inner">
-          {% for url in cafe.images %}
-            <div class="carousel-item {{ 'active' if cafe.images.index(url) == 0 else ''}}">
-              <img src="{{ url }}" class="d-block w-100" alt="">
-            </div>
-          {% endfor %}
+      </div>
+    {% endif %}
+    <div class="d-flex justify-content-between">
+      {% if cafe.menu_link %}
+        <a href="{{ cafe.menu_link }}" class="btn btn-info my-3" target="_blank">Click here to see a menu</a>
+      {% endif %}
+      {% if cafe.added_by_id == current_user.id or current_user.is_admin%}
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-danger my-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Delete</button>
+      {% endif %}
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Confirm delete</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete this cafe? You will not be able to get it back.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <a href="{{ url_for('delete', cafe_id=cafe.id) }}" type="a" class="btn btn-danger">Delete</a>
+          </div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselPhotos" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselPhotos" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Next</span>
-        </button>
       </div>
     </div>
-    {% endif %}
-    {% if cafe.menu_link %}
-      <div class="d-flex justify-content-center">
-        <a href="{{ cafe.menu_link }}" target="_blank">
-        <button class="btn btn-info my-3">Click here to see a menu.</button>
-      </a>
-      </div>
-    {% endif %}
 {% endblock %}
