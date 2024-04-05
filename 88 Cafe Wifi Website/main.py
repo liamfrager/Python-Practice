@@ -85,7 +85,7 @@ def register():
 def all_cafes():
     with app.app_context():
         cafes = db_func.get_all_cafes()
-    return render_template('pages/cafes.html', cafes=cafes)
+        return render_template('pages/cafes.html', cafes=cafes)
 
 
 @app.route('/cafe/<cafe_id>')
@@ -105,6 +105,7 @@ def cafe(cafe_id):
 
 
 @app.route('/my-list')
+@login_required
 def my_list():
     with app.app_context():
         my_cafes = db_func.get_user_cafes(current_user.id)

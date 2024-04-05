@@ -3,9 +3,10 @@
     {% if url_for(request.endpoint) == '/cafes' %}
         <h1 class="my-5">All Cafes</h1>
     {% elif url_for(request.endpoint) == '/my-list' %}
-        <h1 class="my-5">My Cafes</h1>
+        <h1 class="my-3">{{ current_user.name.split()[0] }}'s List</h1>
+        <a href="{{ url_for('add_cafe') }}" class="btn btn-info mb-4">Add Cafe</a>
     {% endif %}
-    <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
         {% for cafe in cafes %}
             <div class="col">
                 <div class="card">
@@ -13,7 +14,10 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ cafe.name }}</h5>
                         <p class="card-text">{{ cafe.open_time.strftime('%-I:%M %p') }} — {{ cafe.close_time.strftime('%-I:%M %p') }}</p>
-                        <a href="{{ url_for('cafe', cafe_id=cafe.id) }}" class="btn btn-primary">View Details</a>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('cafe', cafe_id=cafe.id) }}" class="btn btn-primary">View Details</a>
+                            <p class="my-2 text-end">{{ cafe.added_by.name }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
