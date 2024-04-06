@@ -50,7 +50,7 @@ class ToDoList():
         self.query = db.select(ListItem).where(ListItem.due_date >= date.today() + timedelta(days=range_start), ListItem.due_date <
                                                date.today() + timedelta(days=range_end), ListItem.user_id == current_user.id).order_by(ListItem.due_date)
         self.items = db.session.execute(self.query).scalars()
-        self.new_item_due_date = date.today() + timedelta(days=range_end)
+        self.new_item_due_date = date.today() + timedelta(days=range_end - 1)
         self.route = '/'
         self.is_today = 0 in range(range_start, range_end)
 
@@ -182,7 +182,7 @@ def edit(route):
                     filter(ListItem.id == entry['id']). \
                     update(entry)
             db.session.commit()
-        return redirect(url_for(route, view=request.args.get('view') if request.args.get('view') else 'week'))
+        return redirect(url_for(route, view=request.args.get('view')))
 
 
 @app.route('/delete/<list_item_id>')
@@ -190,9 +190,12 @@ def delete(list_item_id):
     with app.app_context():
         list_item = db.session.execute(
             db.select(ListItem).where(ListItem.id == list_item_id)).scalar()
-        db.session.delete(list_item)
+        if list_item.is_completed:
+            db.session.delete(list_item)
+        else:
+            list_item.is_completed = True
         db.session.commit()
-    return redirect(url_for(request.args.get('route')))
+    return redirect(url_for(request.args.get('route'), view=request.args.get('view')))
 
 
 @app.route('/settings', methods=['GET', 'POST'])
@@ -218,5 +221,7 @@ if __name__ == '__main__':
     app.run(port=4000, debug=True)
 
 
-# TODO: fix list sizing
-# TODO: calendar view
+# TODO: only show first of date in list
+# TODO: don't show completed in overdue list
+# TODO: add ability to move ahead/back a year/month/week
+# TODO: don't scroll to top after clicking checkbox...

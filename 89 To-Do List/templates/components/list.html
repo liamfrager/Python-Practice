@@ -12,18 +12,23 @@
       {% with items = list['items'] %}
         {% for item in items %}
           <li class="list-group-item">
-            <a class="bi bi-app me-3" href="{{ url_for('delete', list_item_id=item.id, route=list.route) }}"></a>
+            <a class="bi {{ 'bi-check-square-fill' if item.is_completed else 'bi-square' }} me-3" href="{{ url_for('delete', list_item_id=item.id, route=list.route, view=view if view else None) }}"></a>
             {% if editing == list.title %}
-              <input class="list-input" type="text" name="text_{{ item.id }}" value="{{ item.text }}">
-              <input class="date-input" type="date" name="date_{{ item.id }}" value="{{ item.due_date }}">
+              <input class="list-input {{ 'text-decoration-line-through' if item.is_completed }}" type="text" name="text_{{ item.id }}" value="{{ item.text }}">
+              <input class="date-input {{ 'text-decoration-line-through' if item.is_completed }}" type="date" name="date_{{ item.id }}" value="{{ item.due_date }}">
             {% else %}
-              <input class="list-input" type="text" value="{{ item.text }}" disabled>
               {% if item.due_date < today_date %}
-                <p class="date-input text-danger">{{ item.due_date.strftime('%b %-d') }}</p>
-              {% elif list.title == 'This Week' %}
-                <p class="date-input">{{ item.due_date.strftime('%A') }}</p>
-              {% elif list.title in ['This Month', 'Future', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] %}
-                <p class="date-input">{{ item.due_date.strftime('%b %-d') }}</p>
+                <input class="list-input {{ 'text-decoration-line-through' if item.is_completed else 'text-danger' }}" type="text" value="{{ item.text }}" disabled>
+                {% if view != 'month' %}
+                  <p class="date-input {{ 'text-decoration-line-through' if item.is_completed else 'text-danger' }}">{{ item.due_date.strftime('%b %-d') }}</p>
+                {% endif %}
+              {% else %}
+                <input class="list-input {{ 'text-decoration-line-through' if item.is_completed }}" type="text" value="{{ item.text }}" disabled>
+                {% if list.title == 'This Week' %}
+                  <p class="date-input {{ 'text-decoration-line-through' if item.is_completed }}">{{ item.due_date.strftime('%A') }}</p>
+                {% elif list.title in ['This Month', 'Future'] or view == 'year' %}
+                  <p class="date-input {{ 'text-decoration-line-through' if item.is_completed }}">{{ item.due_date.strftime('%b %-d') }}</p>
+                {% endif %}
               {% endif %}
             {% endif %}
           </li>
