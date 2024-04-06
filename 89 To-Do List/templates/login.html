@@ -4,28 +4,46 @@
   <div class="container col-xl-10 col-xxl-8 px-4 py-5">
     <div class="row align-items-center g-lg-5 py-5">
       <div class="col-lg-7 text-center text-lg-start">
-        <h1 class="display-4 fw-bold lh-1 mb-3">Vertically centered hero sign-up form</h1>
+        <h1 class="display-4 fw-bold lh-1 mb-3">
+        {% if form.__class__.__name__ == 'LoginForm' %}
+          Login
+        {% else %}
+          Register
+        {% endif %}
+        </h1>
         <p class="col-lg-10 fs-4">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
       </div>
       <div class="col-md-10 mx-auto col-lg-5">
-        <form class="p-4 p-md-5 border rounded-3 bg-light">
-          {{ render_form(form, novalidate=true) }}
-          <!-- <div class="form-floating mb-3">
-            <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
-            <label for="floatingInput">Email address</label>
+        <form class="p-4 p-md-5 border rounded-3 bg-light" method="post">
+          {{ form.hidden_tag() }}
+          {% if form.__class__.__name__ == 'RegisterForm' %}
+            <div class="mb-3">
+              {{ form.name.label(class_="form-label") }}
+              {{ form.name(class_="form-control") }}
+            </div>
+          {% endif %}
+          <div class="mb-3">
+            {{ form.email.label(class_="form-label") }}
+            {{ form.email(class_="form-control") }}
           </div>
-          <div class="form-floating mb-3">
-            <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
-            <label for="floatingPassword">Password</label>
+          <div class="mb-3">
+            {{ form.password.label(class_="form-label") }}
+            {{ form.password(class_="form-control") }}
           </div>
-          <div class="checkbox mb-3">
-            <label>
-              <input type="checkbox" value="remember-me"> Remember me
-            </label>
+          <div class="row gx-3">
+          {% if form.__class__.__name__ == 'LoginForm' %}
+            <div class="col-12 col-md-6 mt-3">
+              {{ form.submit(class_="btn btn-primary w-100") }}
+            </div>
+            <div class="col-12 col-md-6 mt-3">
+              <a class="btn btn-secondary w-100" href="{{ url_for('register') }}" type="link">Register</a>
+            </div>
+          {% else %}
+            <div class="col-12 mt-3">
+              {{ form.submit(class_="btn btn-primary w-100") }}
+            </div>
+          {% endif %}
           </div>
-          <button class="w-100 btn btn-lg btn-primary" type="submit">Sign up</button>
-          <hr class="my-4">
-          <small class="text-muted">By clicking Sign up, you agree to the terms of use.</small> -->
         </form>
       </div>
     </div>

@@ -3,7 +3,7 @@ import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash
-from sqlalchemy import ForeignKey, Integer, String, Time, Boolean
+from sqlalchemy import ForeignKey, Integer, String, Date, Boolean
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -14,38 +14,39 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(100), unique=True)
+    password: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(1000))
+    list_items: Mapped[List["ListItem"]] = relationship(
+        back_populates="user")
+
+
+class ListItem(db.Model):
+    __tablename__ = 'list-items'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    text: Mapped[str] = mapped_column(String(100))
+    due_date: Mapped[datetime.date] = mapped_column(Date)
+    is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(
+        back_populates="list_items")
+
+
 class DB():
-    class User(db.Model, UserMixin):
-        __tablename__ = 'users'
-        id: Mapped[int] = mapped_column(Integer, primary_key=True)
-        email: Mapped[str] = mapped_column(String(100), unique=True)
-        password: Mapped[str] = mapped_column(String(100))
-        name: Mapped[str] = mapped_column(String(1000))
-        list_items: Mapped[List["DB.ListItem"]] = relationship(
-            back_populates="user")
-
-    class ListItem(db.Model):
-        __tablename__ = 'cafes'
-        id: Mapped[int] = mapped_column(Integer, primary_key=True)
-        text: Mapped[str] = mapped_column(String(100), unique=True)
-        due_date: Mapped[datetime.time] = mapped_column(Time)
-        is_completed: Mapped[bool] = mapped_column(Boolean)
-        tags: Mapped[str] = mapped_column(String(16))
-        user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-        user: Mapped["DB.User"] = relationship(
-            back_populates="list_items")
-
-    def get_user(**kwargs):
+    def get_user(self, **kwargs):
         if 'id' in kwargs:
             user = db.session.execute(
-                db.select(DB.User).where(DB.User.id == kwargs['id'])).scalar()
+                db.select(User).where(User.id == kwargs['id'])).scalar()
         elif 'email' in kwargs:
             user = db.session.execute(
-                DB.User.query.filter(DB.User.email == kwargs['email'])).scalar()
+                User.query.filter(User.email == kwargs['email'])).scalar()
         return user
 
     def add_user(self, form_data):
-        new_user = DB.User(
+        new_user = User(
             email=form_data['email'],
             password=generate_password_hash(
                 password=form_data['password'],

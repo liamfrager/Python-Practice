@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h1 class="my-5">{{ current_user.name.split()[0] }}'s Lists</h1>
+  <div class="row">
+    {% for list in lists %}
+      <div class="col-12 col-xl-4 col-lg-{{ 12 if lists.index(list) == 0 else 6 }}">
+        {% with list = list%}
+          {% include 'components/list.html' %}
+        {% endwith %}
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
