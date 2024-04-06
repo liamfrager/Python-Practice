@@ -3,12 +3,14 @@ from flask import Flask, flash, render_template, redirect, request, url_for
 from flask_bootstrap import Bootstrap5
 from flask_login import LoginManager, login_user, logout_user, current_user
 from sqlalchemy.exc import IntegrityError
-from database import database, db, ListItem
-from forms import LoginForm, RegisterForm
+from werkzeug.security import check_password_hash
+from database import database, db, ListItem, User
+from forms import LoginForm, RegisterForm, ThemeColorForm
 
 # APP
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'MySeCrEtDaTaBaSeKeY'
+app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = None
 bootstrap = Bootstrap5(app)
 
 # LOGIN MANAGER
@@ -37,8 +39,15 @@ def home():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        print('login', form.data)
-        return redirect(url_for('lists'))
+        with app.app_context():
+            user = database.get_user(email=form.data['email'])
+            if user and check_password_hash(user.password, form.data['password']):
+                login_user(user)
+                app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = current_user.theme_color
+                return redirect(url_for('lists'))
+            else:
+                flash('Incorrect login.')
+                return render_template('login.html', form=form)
     return render_template('login.html', form=form)
 
 
@@ -51,6 +60,7 @@ def register():
             with app.app_context():
                 new_user = database.add_user(form.data)
                 login_user(new_user)
+                app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = current_user.theme_color
             return redirect(url_for('lists'))
         except IntegrityError:
             flash('User already exists with that email.')
@@ -142,9 +152,21 @@ def calendar(view):
     return render_template('calendar.html', view=view)
 
 
-@ app.route('/logout')
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    if request.method == 'POST':
+        theme = None if request.form['theme_color'] == 'default' else request.form['theme_color']
+        with app.app_context():
+            current_user.theme_color = theme
+            db.session.commit()
+        app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = theme
+    return render_template('settings.html', default_theme=current_user.theme_color)
+
+
+@app.route('/logout')
 def logout():
     logout_user()
+    app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = None
     return redirect(url_for('login'))
 
 
@@ -153,7 +175,4 @@ if __name__ == '__main__':
     app.run(port=4000, debug=True)
 
 
-# TODO: check box that makes it go away.
-# TODO: time for todo item
 # TODO: sidebar list of lists
-# TODO: save edits
