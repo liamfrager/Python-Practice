@@ -15,9 +15,3 @@ class RegisterForm(FlaskForm):
     email = EmailField(validators=[DataRequired(), Email()])
     password = PasswordField(validators=[DataRequired(), Length(8)])
     submit = SubmitField('Register')
-
-
-class ThemeColorForm(FlaskForm):
-    theme = SelectField('Theme Color', choices=[(None, 'Default'), ('flatly', 'Flatly'), (
-        'minty', 'Minty'), ('sandstone', 'Sandstone'), ('litera', 'Litera')])
-    submit = SubmitField('Change Theme')

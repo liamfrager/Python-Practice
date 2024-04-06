@@ -1,7 +1,7 @@
 <div class="container my-4">
   <form action="{{ url_for('edit', route=list.route, view=view if view else None) }}" method="post">
     <div class="d-flex justify-content-between">
-      <h2 id="{{ list.title }}">{{ list.title }}</h2>
+      <h2 id="{{ list.title.replace(' ', '') }}" class="{{ 'text-primary' if list.is_today }}">{{ list.title }}</h2>
       {% if editing == list.title %}
         <button class="bi bi-check-lg text-primary icon-button" type="submit"></button>
       {% elif not editing %}

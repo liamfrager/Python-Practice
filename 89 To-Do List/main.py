@@ -1,12 +1,12 @@
 from datetime import date, timedelta
-from calendar import isleap
+from calendar import isleap, monthrange
 from flask import Flask, flash, render_template, redirect, request, url_for
 from flask_bootstrap import Bootstrap5
 from flask_login import LoginManager, login_user, logout_user, current_user
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash
-from database import database, db, ListItem, User
-from forms import LoginForm, RegisterForm, ThemeColorForm
+from database import database, db, ListItem
+from forms import LoginForm, RegisterForm
 
 # APP
 app = Flask(__name__)
@@ -48,10 +48,11 @@ class ToDoList():
     def __init__(self, title, range_start, range_end):
         self.title = title
         self.query = db.select(ListItem).where(ListItem.due_date >= date.today() + timedelta(days=range_start), ListItem.due_date <
-                                               date.today() + timedelta(days=range_end + 1), ListItem.user_id == current_user.id).order_by(ListItem.due_date)
+                                               date.today() + timedelta(days=range_end), ListItem.user_id == current_user.id).order_by(ListItem.due_date)
         self.items = db.session.execute(self.query).scalars()
         self.new_item_due_date = date.today() + timedelta(days=range_end)
         self.route = '/'
+        self.is_today = 0 in range(range_start, range_end)
 
 
 # ROUTES
@@ -80,7 +81,6 @@ def login():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        print('register', form.data)
         try:
             with app.app_context():
                 new_user = database.add_user(form.data)
@@ -109,11 +109,12 @@ def lists():
             db.session.add(new_list_item)
             db.session.commit()
     with app.app_context():
-        today = ToDoList('Today', -365, 0)
+        today = ToDoList('Today', 0, 1)
         this_week = ToDoList('This Week', 1, 7)
-        this_month = ToDoList('This Month', 8, 7*4)
-        future = ToDoList('Future', 29, 7*13)
-        lists = [today, this_week, this_month, future]
+        this_month = ToDoList('This Month', 7, 7*4)
+        future = ToDoList('Future', 28, 7*13)
+        overdue = ToDoList('Overdue', -365, 0)
+        lists = [today, this_week, this_month, future, overdue]
         for lst in lists:
             lst.route = 'lists'
         return render_template('lists.html', lists=lists, editing=request.args.get('edit') if request.args.get('edit') else list_name)
@@ -137,35 +138,32 @@ def calendar():
     view = request.args.get('view') if request.args.get('view') else 'week'
     lists = []
     today = date.today()
-    days_in_month = [31, 29 if isleap(
-        today.year) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    print()
     match view:
         case 'week':
             for i in range(7):
                 todo_list = ToDoList('Today' if i == 0 else (
-                    date.today() + timedelta(days=i)).strftime('%A'), i, i)
+                    today + timedelta(days=i)).strftime('%A'), i, i + 1)
                 todo_list.route = 'calendar'
                 lists.append(todo_list)
-            id = "#"
         case 'month':
-            for i in range(days_in_month[date.today().month - 1]):
+            for i in range(monthrange(today.year, today.month)[1]):
                 todo_list = ToDoList('Today' if i == today.day - 1 else (today - timedelta(
-                    days=today.day) + timedelta(days=i + 1)).strftime('%B %-d'), i, i)
+                    days=today.day) + timedelta(days=i + 1)).strftime('%B %-d'), i - today.day + 1, i - today.day + 2)
                 todo_list.route = 'calendar'
                 lists.append(todo_list)
-            id = f"#{today.strftime('%B %-d')}"
         case 'year':
             for i in range(12):
                 this_month_start = today - timedelta(days=today.day - 1)
                 month_start = this_month_start - \
-                    timedelta(days=sum([days_in_month[x] for x in range(today.month - 1)])) + \
-                    timedelta(days=sum([days_in_month[x] for x in range(i)]))
+                    timedelta(days=sum([monthrange(today.year, x)[1] for x in range(1, today.month)])) + \
+                    timedelta(days=sum([monthrange(today.year, x)[1]
+                              for x in range(1, i + 1)]))
                 todo_list = ToDoList(month_start.strftime(
-                    '%B'), -(today - month_start).days, -(today - month_start).days + days_in_month[month_start.month - 1] - 1)
+                    '%B'), -(today - month_start).days, -(today - month_start).days + monthrange(today.year, month_start.month)[1])
                 todo_list.route = 'calendar'
                 lists.append(todo_list)
-            id = f"#{today.strftime('%B')}"
-    return render_template(f'calendar.html', id=id, view=view, lists=lists, editing=request.args.get('edit') if request.args.get('edit') else list_name)
+    return render_template(f'calendar.html', view=view, lists=lists, editing=request.args.get('edit') if request.args.get('edit') else list_name)
 
 
 @app.route('/edit/<route>', methods=['GET', 'POST'])
