@@ -1,29 +1,29 @@
 <div class="container my-4">
-  <form action="{{ url_for('edit', list_name=list.title) }}" method="post">
+  <form action="{{ url_for('edit', route=list.route, view=view if view else None) }}" method="post">
     <div class="d-flex justify-content-between">
-      <h2>{{ list.title }}</h2>
+      <h2 id="{{ list.title }}">{{ list.title }}</h2>
       {% if editing == list.title %}
         <button class="bi bi-check-lg text-primary icon-button" type="submit"></button>
       {% elif not editing %}
-        <a class="bi bi-pencil text-primary" href="{{ url_for('edit', list_name=list.title) }}"></a>
+        <a class="bi bi-pencil text-primary" href="{{ url_for(list.route, edit=list.title, view=view if view else None) }}"></a>
       {% endif %}
     </div>
     <ul class="list-group list-group-flush">
       {% with items = list['items'] %}
         {% for item in items %}
           <li class="list-group-item">
-            <a class="bi bi-app me-3" href="{{ url_for('delete', list_item_id=item.id) }}"></a>
+            <a class="bi bi-app me-3" href="{{ url_for('delete', list_item_id=item.id, route=list.route) }}"></a>
             {% if editing == list.title %}
               <input class="list-input" type="text" name="text_{{ item.id }}" value="{{ item.text }}">
               <input class="date-input" type="date" name="date_{{ item.id }}" value="{{ item.due_date }}">
             {% else %}
               <input class="list-input" type="text" value="{{ item.text }}" disabled>
-              {% if list.title == 'Today' and item.due_date < today %}
-                <input class="date-input text-danger" type="text" value="{{ item.due_date.strftime('%b %-d') }}" disabled>
+              {% if item.due_date < today_date %}
+                <p class="date-input text-danger">{{ item.due_date.strftime('%b %-d') }}</p>
               {% elif list.title == 'This Week' %}
-                <input class="date-input" type="text" value="{{ item.due_date.strftime('%A') }}" disabled>
-              {% else %}
-                <input class="date-input" type="text" value="{{ item.due_date.strftime('%b %-d') }}" disabled>
+                <p class="date-input">{{ item.due_date.strftime('%A') }}</p>
+              {% elif list.title in ['This Month', 'Future', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] %}
+                <p class="date-input">{{ item.due_date.strftime('%b %-d') }}</p>
               {% endif %}
             {% endif %}
           </li>
@@ -31,10 +31,11 @@
       {% endwith %}
     </ul>
   </form>
-  {% if not editing %}
+  {% if editing == list.title %}
       <li class="list-group-item">
-        <form action="{{ url_for('lists') }}" method="post">
-          <input class="form-control" type="text" name="{{ list.title }}" placeholder="New item">
+        <form action="{{ url_for(list.route, view=view if view else None) }}" method="post">
+          <input class="form-control" type="text" name="{{ list.title }}" placeholder="New item" autofocus>
+          <input type="text" style="display: none" name="new_item_due_date" value="{{ list.new_item_due_date }}">
           <input type="submit" style="display: none"/>
         </form>
       </li>

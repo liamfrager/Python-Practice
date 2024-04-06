@@ -1,12 +1,16 @@
 .list-input {
     border: none;
     outline: none;
+    background: none;
+    margin: 0;
     width: 55%;
 }
 
 .date-input {
     border: none;
     outline: none;
+    background: none;
+    margin: 0;
     max-width: 30%;
     float: right;
     text-align: end;

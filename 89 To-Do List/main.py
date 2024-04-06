@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from calendar import isleap
 from flask import Flask, flash, render_template, redirect, request, url_for
 from flask_bootstrap import Bootstrap5
 from flask_login import LoginManager, login_user, logout_user, current_user
@@ -27,6 +28,30 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///to-do-list.db'
 db.init_app(app)
 with app.app_context():
     db.create_all()
+
+
+# VARIABLES & CLASSES
+@app.context_processor
+def add_variables():
+    return {'today_date': date.today()}
+
+
+class ToDoList():
+    '''
+    Parameters:
+    title: The name of the list.
+    range_start: The number of days from today where your range of data should start.
+    range_end: The number of days from today where your range of data should end.
+    new_item_due_date: The number of days from today that a newly added item should be due.
+    '''
+
+    def __init__(self, title, range_start, range_end):
+        self.title = title
+        self.query = db.select(ListItem).where(ListItem.due_date >= date.today() + timedelta(days=range_start), ListItem.due_date <
+                                               date.today() + timedelta(days=range_end + 1), ListItem.user_id == current_user.id).order_by(ListItem.due_date)
+        self.items = db.session.execute(self.query).scalars()
+        self.new_item_due_date = date.today() + timedelta(days=range_end)
+        self.route = '/'
 
 
 # ROUTES
@@ -70,48 +95,81 @@ def register():
 
 @app.route('/lists', methods=['GET', 'POST'])
 def lists():
+    list_name = None
     if request.method == 'POST':
         list_item = request.form.to_dict()
         list_name = list(list_item.keys())[0]
-        match list_name:
-            case 'Today':
-                due_date = date.today()
-            case 'This Week':
-                due_date = date.today() + timedelta(days=7)
-            case 'This Month':
-                due_date = date.today() + timedelta(weeks=4)
-            case 'Future':
-                due_date = date.today() + timedelta(weeks=13)
         with app.app_context():
             new_list_item = ListItem(
                 text=list_item[list_name],
-                due_date=due_date,
+                due_date=date(*(int(n)
+                              for n in list_item['new_item_due_date'].split('-'))),
                 user_id=current_user.id
             )
             db.session.add(new_list_item)
             db.session.commit()
     with app.app_context():
-        today_q = db.select(ListItem).where(
-            ListItem.due_date <= date.today(), ListItem.user_id == current_user.id).order_by(ListItem.due_date)
-        this_week_q = db.select(ListItem).where(
-            ListItem.due_date > date.today(), ListItem.due_date <= date.today() + timedelta(days=7), ListItem.user_id == current_user.id).order_by(ListItem.due_date)
-        this_month_q = db.select(ListItem).where(
-            ListItem.due_date > date.today() + timedelta(days=7), ListItem.due_date <= date.today() + timedelta(weeks=4), ListItem.user_id == current_user.id).order_by(ListItem.due_date)
-        future_q = db.select(ListItem).where(
-            ListItem.due_date > date.today() + timedelta(weeks=4), ListItem.user_id == current_user.id).order_by(ListItem.due_date)
-        today = {'title': 'Today',
-                 'items': db.session.execute(today_q).scalars()}
-        this_week = {'title': 'This Week',
-                     'items': db.session.execute(this_week_q).scalars()}
-        this_month = {'title': 'This Month',
-                      'items': db.session.execute(this_month_q).scalars()}
-        future = {'title': 'Future',
-                  'items': db.session.execute(future_q).scalars()}
-        return render_template('lists.html', today=date.today(), lists=[today, this_week, this_month, future], editing=request.args.get('edit') if request.args.get('edit') else False)
+        today = ToDoList('Today', -365, 0)
+        this_week = ToDoList('This Week', 1, 7)
+        this_month = ToDoList('This Month', 8, 7*4)
+        future = ToDoList('Future', 29, 7*13)
+        lists = [today, this_week, this_month, future]
+        for lst in lists:
+            lst.route = 'lists'
+        return render_template('lists.html', lists=lists, editing=request.args.get('edit') if request.args.get('edit') else list_name)
 
 
-@app.route('/edit/<list_name>', methods=['GET', 'POST'])
-def edit(list_name):
+@app.route('/calendar', methods=['GET', 'POST'])
+def calendar():
+    list_name = None
+    if request.method == 'POST':
+        list_item = request.form.to_dict()
+        list_name = list(list_item.keys())[0]
+        with app.app_context():
+            new_list_item = ListItem(
+                text=list_item[list_name],
+                due_date=date(*(int(n)
+                              for n in list_item['new_item_due_date'].split('-'))),
+                user_id=current_user.id
+            )
+            db.session.add(new_list_item)
+            db.session.commit()
+    view = request.args.get('view') if request.args.get('view') else 'week'
+    lists = []
+    today = date.today()
+    days_in_month = [31, 29 if isleap(
+        today.year) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    match view:
+        case 'week':
+            for i in range(7):
+                todo_list = ToDoList('Today' if i == 0 else (
+                    date.today() + timedelta(days=i)).strftime('%A'), i, i)
+                todo_list.route = 'calendar'
+                lists.append(todo_list)
+            id = "#"
+        case 'month':
+            for i in range(days_in_month[date.today().month - 1]):
+                todo_list = ToDoList('Today' if i == today.day - 1 else (today - timedelta(
+                    days=today.day) + timedelta(days=i + 1)).strftime('%B %-d'), i, i)
+                todo_list.route = 'calendar'
+                lists.append(todo_list)
+            id = f"#{today.strftime('%B %-d')}"
+        case 'year':
+            for i in range(12):
+                this_month_start = today - timedelta(days=today.day - 1)
+                month_start = this_month_start - \
+                    timedelta(days=sum([days_in_month[x] for x in range(today.month - 1)])) + \
+                    timedelta(days=sum([days_in_month[x] for x in range(i)]))
+                todo_list = ToDoList(month_start.strftime(
+                    '%B'), -(today - month_start).days, -(today - month_start).days + days_in_month[month_start.month - 1] - 1)
+                todo_list.route = 'calendar'
+                lists.append(todo_list)
+            id = f"#{today.strftime('%B')}"
+    return render_template(f'calendar.html', id=id, view=view, lists=lists, editing=request.args.get('edit') if request.args.get('edit') else list_name)
+
+
+@app.route('/edit/<route>', methods=['GET', 'POST'])
+def edit(route):
     if request.method == 'POST':
         data = request.form.to_dict()
         ids = [id.split('_')[1] for id in list(data.keys())[::2]]
@@ -126,8 +184,7 @@ def edit(list_name):
                     filter(ListItem.id == entry['id']). \
                     update(entry)
             db.session.commit()
-        return redirect(url_for('lists'))
-    return redirect(url_for('lists', edit=list_name))
+        return redirect(url_for(route, view=request.args.get('view') if request.args.get('view') else 'week'))
 
 
 @app.route('/delete/<list_item_id>')
@@ -137,19 +194,7 @@ def delete(list_item_id):
             db.select(ListItem).where(ListItem.id == list_item_id)).scalar()
         db.session.delete(list_item)
         db.session.commit()
-    return redirect(url_for('lists'))
-
-
-@ app.route('/calendar/<view>')
-def calendar(view):
-    match view:
-        case 'week':
-            pass
-        case 'month':
-            pass
-        case 'year':
-            pass
-    return render_template('calendar.html', view=view)
+    return redirect(url_for(request.args.get('route')))
 
 
 @app.route('/settings', methods=['GET', 'POST'])
@@ -175,4 +220,5 @@ if __name__ == '__main__':
     app.run(port=4000, debug=True)
 
 
-# TODO: sidebar list of lists
+# TODO: fix list sizing
+# TODO: calendar view

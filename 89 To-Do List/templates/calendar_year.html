@@ -1,0 +1,9 @@
+<div class="row">
+  {% for list in lists %}
+    <div class="col-12">
+      {% with list = list%}
+        {% include 'components/list.html' %}
+      {% endwith %}
+    </div>
+  {% endfor %}
+</div>

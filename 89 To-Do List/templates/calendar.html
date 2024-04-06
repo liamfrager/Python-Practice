@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h1 class="my-5">This {{ view.title() }}</h1>
-  {% if view == 'week' %}
-  
-  {% elif view == 'month' %}
-    
-  {% elif view == 'year' %}
-    
-  {% endif %}
+  <div class="row sticky-top bg-white">
+    <h1 class="py-5">This {{ view.title() }}</h1>
+    <ul class="btn-group">
+      {% for label in ['week', 'month','year'] %}
+        <a class="btn btn{{ '' if view == label else '-outline' }}-primary" href="{{ url_for('calendar', view=label) }}">{{ label.title() }}</a>
+      {% endfor %}
+    </ul>
+  </div>
+  {% include 'calendar_' + view + '.html' %}
 {% endblock %}
