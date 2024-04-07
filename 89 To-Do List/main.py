@@ -7,12 +7,14 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash
 from database import database, db, ListItem
 from forms import LoginForm, RegisterForm
+from turbo_flask import Turbo
 
 # APP
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'MySeCrEtDaTaBaSeKeY'
 app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = None
 bootstrap = Bootstrap5(app)
+turbo = Turbo(app)
 
 # LOGIN MANAGER
 login_manager = LoginManager(app)
@@ -163,6 +165,7 @@ def calendar():
                     '%B'), -(today - month_start).days, -(today - month_start).days + monthrange(today.year, month_start.month)[1])
                 todo_list.route = 'calendar'
                 lists.append(todo_list)
+
     return render_template(f'calendar.html', view=view, lists=lists, editing=request.args.get('edit') if request.args.get('edit') else list_name)
 
 
@@ -190,10 +193,17 @@ def delete(list_item_id):
     with app.app_context():
         list_item = db.session.execute(
             db.select(ListItem).where(ListItem.id == list_item_id)).scalar()
-        if list_item.is_completed:
-            db.session.delete(list_item)
-        else:
-            list_item.is_completed = True
+        db.session.delete(list_item)
+        db.session.commit()
+    return redirect(url_for(request.args.get('route'), view=request.args.get('view')))
+
+
+@app.route('/toggle/<list_item_id>')
+def toggle(list_item_id):
+    with app.app_context():
+        list_item = db.session.execute(
+            db.select(ListItem).where(ListItem.id == list_item_id)).scalar()
+        list_item.is_completed = not list_item.is_completed
         db.session.commit()
     return redirect(url_for(request.args.get('route'), view=request.args.get('view')))
 
