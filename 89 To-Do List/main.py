@@ -232,14 +232,18 @@ def toggle(list_item_id):
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
-    print(current_user.settings)
     if request.method == 'POST':
-        theme = None if request.form['theme_color'] == 'default' else request.form['theme_color']
         with app.app_context():
-            current_user.settings.theme_color = theme
+            settings = request.form.to_dict()
+            print(settings)
+            current_user.settings.theme_color = None if settings[
+                'theme_color'] == 'default' else settings['theme_color']
+            current_user.settings.show_future_list = 'show_future_list' in settings
+            current_user.settings.show_overdue_list = 'show_overdue_list' in settings
+            current_user.settings.default_calendar_view = settings['default_calendar_view']
             db.session.commit()
-        app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = theme
-    return render_template('settings.html', default_theme=current_user.settings.theme_color)
+        app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = current_user.settings.theme_color
+    return render_template('settings.html')
 
 
 @app.route('/logout')
@@ -257,6 +261,5 @@ if __name__ == '__main__':
 
 # TODO: only show first of date in list
 # TODO: add ability to move ahead/back a year/month/week
-# TODO: adjust date input height difference
 # TODO: combine calendar_views into list_display
-# TODO: fix database settings relationship.
+# TODO: figure out what the home page is for

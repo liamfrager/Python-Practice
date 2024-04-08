@@ -28,7 +28,8 @@ class User(db.Model, UserMixin):
 class UserSettings(db.Model):
     __tablename__ = 'user-settings'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    theme_color: Mapped[str] = mapped_column(String(15))
+    theme_color: Mapped[str] = mapped_column(
+        String(15), nullable=True, default=None)
     default_calendar_view: Mapped[str] = mapped_column(
         String(7), default='week')
     show_future_list: Mapped[bool] = mapped_column(Boolean, default=True)

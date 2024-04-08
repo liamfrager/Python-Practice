@@ -12,7 +12,7 @@
         </a>
       </li>
       <li>
-        <a href="{{ url_for('calendar', view='week') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Calendar">
+        <a href="{{ url_for('calendar', view=current_user.settings.default_calendar_view if current_user.is_authenticated else 'week') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Calendar">
           <i class="bi-table fs-1"></i>
         </a>
       </li>

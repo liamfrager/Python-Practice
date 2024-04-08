@@ -8,7 +8,7 @@
   <ul class="nav col-md-4 justify-content-end">
     <li class="nav-item"><a href="{{ url_for('home') }}" class="nav-link px-2 text-body-secondary">Home</a></li>
     <li class="nav-item"><a href="{{ url_for('lists') }}" class="nav-link px-2 text-body-secondary">List</a></li>
-    <li class="nav-item"><a href="{{ url_for('calendar', view='week') }}" class="nav-link px-2 text-body-secondary">Calendar</a></li>
+    <li class="nav-item"><a href="{{ url_for('calendar', view=current_user.settings.default_calendar_view if current_user.is_authenticated else 'week') }}" class="nav-link px-2 text-body-secondary">Calendar</a></li>
   </ul>
 </footer>
 <script>document.getElementById("currYear").innerText = new Date().getFullYear()</script>
