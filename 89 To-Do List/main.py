@@ -1,8 +1,8 @@
 from datetime import date, timedelta
-from calendar import isleap, monthrange
+from calendar import monthrange
 from flask import Flask, flash, render_template, redirect, request, url_for
 from flask_bootstrap import Bootstrap5
-from flask_login import LoginManager, login_user, logout_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash
 from database import database, db, ListItem
@@ -23,6 +23,11 @@ login_manager = LoginManager(app)
 @login_manager.user_loader
 def load_user(user_id):
     return database.get_user(id=user_id)
+
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    return redirect(url_for('login'))
 
 
 # DATABASE
@@ -71,7 +76,7 @@ def login():
             user = database.get_user(email=form.data['email'])
             if user and check_password_hash(user.password, form.data['password']):
                 login_user(user)
-                app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = current_user.theme_color
+                app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = current_user.settings.theme_color
                 return redirect(url_for('lists'))
             else:
                 flash('Incorrect login.')
@@ -87,7 +92,7 @@ def register():
             with app.app_context():
                 new_user = database.add_user(form.data)
                 login_user(new_user)
-                app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = current_user.theme_color
+                app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = current_user.settings.theme_color
             return redirect(url_for('lists'))
         except IntegrityError:
             flash('User already exists with that email.')
@@ -96,6 +101,7 @@ def register():
 
 
 @app.route('/lists', methods=['GET', 'POST'])
+@login_required
 def lists():
     list_name = None
     if request.method == 'POST':
@@ -114,16 +120,27 @@ def lists():
         today = ToDoList('Today', 0, 1)
         this_week = ToDoList('This Week', 1, 7)
         this_month = ToDoList('This Month', 7, 7*4)
-        future = ToDoList('Future', 28, 7*13)
-        overdue = ToDoList('Overdue', -365, 0)
-        lists = [today, this_week, this_month, future, overdue]
-        for lst in lists:
-            lst.route = 'lists'
-        return render_template('lists.html', lists=lists, editing=request.args.get('edit') if request.args.get('edit') else list_name)
+        lists = [today, this_week, this_month]
+        if current_user.settings.show_future_list:
+            future = ToDoList('Future', 28, 7*13)
+            lists.append(future)
+        if current_user.settings.show_overdue_list:
+            overdue = ToDoList('Overdue', -365, 0)
+            overdue.items = [
+                item for item in overdue.items if not item.is_completed]
+            lists.append(overdue)
+        for l in lists:
+            l.route = 'lists'
+        lists = {l.title: l for l in lists}
+        if turbo.can_stream() and request.method == 'POST':
+            return turbo.stream(
+                turbo.update(render_template('components/list_display.html', lists=lists, editing=request.args.get('editing') if request.args.get('editing') else list_name), target='turboLists'))
+        return render_template('lists.html', lists=lists, editing=request.args.get('editing') if request.args.get('editing') else list_name)
 
 
-@app.route('/calendar', methods=['GET', 'POST'])
-def calendar():
+@app.route('/calendar/<view>', methods=['GET', 'POST'])
+@login_required
+def calendar(view):
     list_name = None
     if request.method == 'POST':
         list_item = request.form.to_dict()
@@ -137,10 +154,8 @@ def calendar():
             )
             db.session.add(new_list_item)
             db.session.commit()
-    view = request.args.get('view') if request.args.get('view') else 'week'
     lists = []
     today = date.today()
-    print()
     match view:
         case 'week':
             for i in range(7):
@@ -165,11 +180,14 @@ def calendar():
                     '%B'), -(today - month_start).days, -(today - month_start).days + monthrange(today.year, month_start.month)[1])
                 todo_list.route = 'calendar'
                 lists.append(todo_list)
-
-    return render_template(f'calendar.html', view=view, lists=lists, editing=request.args.get('edit') if request.args.get('edit') else list_name)
+    if turbo.can_stream():
+        return turbo.stream(
+            turbo.update(render_template(f'calendar_{view}.html', view=view, lists=lists, editing=request.args.get('editing') if request.args.get('editing') else list_name), target='turboCalendar'))
+    return render_template(f'calendar.html', view=view, lists=lists, editing=request.args.get('editing') if request.args.get('editing') else list_name)
 
 
 @app.route('/edit/<route>', methods=['GET', 'POST'])
+@login_required
 def edit(route):
     if request.method == 'POST':
         data = request.form.to_dict()
@@ -185,20 +203,23 @@ def edit(route):
                     filter(ListItem.id == entry['id']). \
                     update(entry)
             db.session.commit()
-        return redirect(url_for(route, view=request.args.get('view')))
+
+        return redirect(url_for(route, view=request.args.get('view'), from_edit=True))
 
 
 @app.route('/delete/<list_item_id>')
+@login_required
 def delete(list_item_id):
     with app.app_context():
         list_item = db.session.execute(
             db.select(ListItem).where(ListItem.id == list_item_id)).scalar()
         db.session.delete(list_item)
         db.session.commit()
-    return redirect(url_for(request.args.get('route'), view=request.args.get('view')))
+    return redirect(url_for(request.args.get('route'), view=request.args.get('view'), editing=request.args.get('editing')))
 
 
 @app.route('/toggle/<list_item_id>')
+@login_required
 def toggle(list_item_id):
     with app.app_context():
         list_item = db.session.execute(
@@ -209,17 +230,20 @@ def toggle(list_item_id):
 
 
 @app.route('/settings', methods=['GET', 'POST'])
+@login_required
 def settings():
+    print(current_user.settings)
     if request.method == 'POST':
         theme = None if request.form['theme_color'] == 'default' else request.form['theme_color']
         with app.app_context():
-            current_user.theme_color = theme
+            current_user.settings.theme_color = theme
             db.session.commit()
         app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = theme
-    return render_template('settings.html', default_theme=current_user.theme_color)
+    return render_template('settings.html', default_theme=current_user.settings.theme_color)
 
 
 @app.route('/logout')
+@login_required
 def logout():
     logout_user()
     app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = None
@@ -232,6 +256,7 @@ if __name__ == '__main__':
 
 
 # TODO: only show first of date in list
-# TODO: don't show completed in overdue list
 # TODO: add ability to move ahead/back a year/month/week
-# TODO: don't scroll to top after clicking checkbox...
+# TODO: adjust date input height difference
+# TODO: combine calendar_views into list_display
+# TODO: fix database settings relationship.

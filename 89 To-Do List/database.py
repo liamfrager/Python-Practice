@@ -1,4 +1,3 @@
-from typing import List
 import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
@@ -20,9 +19,23 @@ class User(db.Model, UserMixin):
     email: Mapped[str] = mapped_column(String(100), unique=True)
     password: Mapped[str] = mapped_column(String(100))
     name: Mapped[str] = mapped_column(String(100))
-    theme_color: Mapped[str] = mapped_column(String(15))
-    list_items: Mapped[List["ListItem"]] = relationship(
+    settings: Mapped["UserSettings"] = relationship(
         back_populates="user")
+    list_items: Mapped[list["ListItem"]] = relationship(
+        back_populates="user")
+
+
+class UserSettings(db.Model):
+    __tablename__ = 'user-settings'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    theme_color: Mapped[str] = mapped_column(String(15))
+    default_calendar_view: Mapped[str] = mapped_column(
+        String(7), default='week')
+    show_future_list: Mapped[bool] = mapped_column(Boolean, default=True)
+    show_overdue_list: Mapped[bool] = mapped_column(Boolean, default=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(
+        back_populates="settings")
 
 
 class ListItem(db.Model):
@@ -57,6 +70,9 @@ class DB():
             name=form_data['name']
         )
         db.session.add(new_user)
+        db.session.commit()
+        user_settings = UserSettings(user_id=new_user.id)
+        db.session.add(user_settings)
         db.session.commit()
         return new_user
 

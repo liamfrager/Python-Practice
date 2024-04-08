@@ -7,29 +7,20 @@
         </a>
       </li>
       <li>
-        <a href="{{ url_for('lists') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+        <a href="{{ url_for('lists') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Lists">
           <i class="bi-list-check fs-1"></i>
         </a>
       </li>
       <li>
-        <a href="{{ url_for('calendar', view='week') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Orders">
+        <a href="{{ url_for('calendar', view='week') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Calendar">
           <i class="bi-table fs-1"></i>
         </a>
       </li>
+      <li>
+        <a href="{{ url_for('settings') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Settings">
+          <i class="bi-gear fs-1"></i>
+        </a>
+      </li>
     </ul>
-    <div class="dropdown">
-      <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi-person-circle h2"></i>
-      </a>
-      <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
-        {% if current_user.is_authenticated %}
-          <li><a class="dropdown-item" href="{{ url_for('settings') }}">Settings</a></li>
-          <li><a class="dropdown-item" href="#">Profile</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
-        {% else %}
-          <li><a class="dropdown-item" href="{{ url_for('login') }}">Login</a></li>
-        {% endif %}
-      </ul>
-    </div>
   </div>
 </div>

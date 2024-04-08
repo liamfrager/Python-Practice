@@ -1,18 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
   <h1 class="my-5">Settings</h1>
-  <form action="{{ url_for('settings') }}" method="post">
-    <div class="form-group">
-      <label for="themeColor">Theme Color</label>
-      <select class="form-control" name="theme_color" id="themeColor" onchange="this.form.submit()">
-      {% for theme in ['default', 'flatly', 'minty', 'sandstone', 'litera'] %}
-        {% if current_user.theme_color == theme %}
-          <option value="{{ theme }}" selected>{{ theme.title()}}</option>
-        {% else %}
-          <option value="{{ theme }}">{{ theme.title()}}</option>
-        {% endif %}
-      {% endfor %}
-    </select>
-    </div>
-  </form>
+  <div class="col-12 col-md-6 my-3">
+    <form action="{{ url_for('settings') }}" method="post">
+      <div class="form-group">
+        <label for="themeColor">Theme Color</label>
+        <select class="form-control" name="theme_color" id="themeColor" onchange="this.form.submit()">
+        {% for theme in ['default', 'flatly', 'minty', 'sandstone', 'litera'] %}
+          {% if current_user.theme_color == theme %}
+            <option value="{{ theme }}" selected>{{ theme.title()}}</option>
+          {% else %}
+            <option value="{{ theme }}">{{ theme.title()}}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      </div>
+    </form>
+  </div>
+  <a href="{{ url_for('logout') }}" class="btn btn-primary my-3">Logout</a>
 {% endblock %}

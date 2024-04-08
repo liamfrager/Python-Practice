@@ -8,5 +8,7 @@
       {% endfor %}
     </ul>
   </div>
-  {% include 'calendar_' + view + '.html' %}
+  <turbo-frame id="turboCalendar">
+    {% include 'calendar_' + view + '.html' %}
+  </turbo-frame>
 {% endblock %}
