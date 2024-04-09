@@ -1,0 +1,22 @@
+<li class="list-group-item">
+  {% if editing == list.title %}
+    <a class="bi bi-x-square text-danger me-3" href="{{ url_for('delete', list_item_id=item.id, route=list.route, view=view, editing=list.title) }}"></a>
+    <input class="list-input{{ ' text-decoration-line-through' if item.is_completed else ' text-danger' if item.due_date < today_date }}" type="text" name="text_{{ item.id }}" value="{{ item.text }}">
+    <input class="date-input{{ ' text-decoration-line-through' if item.is_completed }}" type="date" name="date_{{ item.id }}" value="{{ item.due_date }}">
+  {% else %}
+    <a class="bi{{ ' bi-check-square-fill' if item.is_completed else ' bi-square' }} me-3" href="{{ url_for('toggle', list_item_id=item.id, route=list.route, view=view) }}"></a>
+    {% if item.due_date < today_date %}
+      <input class="list-input{{ ' text-decoration-line-through' if item.is_completed else ' text-danger' }}" type="text" value="{{ item.text }}">
+      {% if view != 'month' %}
+        <span class="date-input{{ ' text-decoration-line-through' if item.is_completed else ' text-danger' }}">{{ item.due_date.strftime('%b %-d') }}</span>
+      {% endif %}
+    {% else %}
+      <input class="list-input{{ ' text-decoration-line-through' if item.is_completed }}" type="text" value="{{ item.text }}">
+      {% if list.title == 'This Week' %}
+        <span class="date-input{{ ' text-decoration-line-through' if item.is_completed }}">{{ item.due_date.strftime('%A') }}</span>
+      {% elif list.title in ['This Month', 'Future'] or view == 'year' %}
+        <span class="date-input{{ ' text-decoration-line-through' if item.is_completed }}">{{ item.due_date.strftime('%b %-d') }}</span>
+      {% endif %}
+    {% endif %}
+  {% endif %}
+</li>

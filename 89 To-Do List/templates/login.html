@@ -14,37 +14,40 @@
         <p class="col-lg-10 fs-4">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
       </div>
       <div class="col-md-10 mx-auto col-lg-5">
-        <form class="p-4 p-md-5 border rounded-3 bg-light" method="post">
-          {{ form.hidden_tag() }}
-          {% if form.__class__.__name__ == 'RegisterForm' %}
+        {% include 'components/flash_messages.html' %}
+        <div data-turbo="false">
+          <form class="p-4 p-md-5 border rounded-3 bg-light" method="post">
+            {{ form.hidden_tag() }}
+            {% if form.__class__.__name__ == 'RegisterForm' %}
+              <div class="mb-3">
+                {{ form.name.label(class_="form-label") }}
+                {{ form.name(class_="form-control") }}
+              </div>
+            {% endif %}
             <div class="mb-3">
-              {{ form.name.label(class_="form-label") }}
-              {{ form.name(class_="form-control") }}
+              {{ form.email.label(class_="form-label") }}
+              {{ form.email(class_="form-control") }}
             </div>
-          {% endif %}
-          <div class="mb-3">
-            {{ form.email.label(class_="form-label") }}
-            {{ form.email(class_="form-control") }}
-          </div>
-          <div class="mb-3">
-            {{ form.password.label(class_="form-label") }}
-            {{ form.password(class_="form-control") }}
-          </div>
-          <div class="row gx-3">
-          {% if form.__class__.__name__ == 'LoginForm' %}
-            <div class="col-12 col-md-6 mt-3">
-              {{ form.submit(class_="btn btn-primary w-100") }}
+            <div class="mb-3">
+              {{ form.password.label(class_="form-label") }}
+              {{ form.password(class_="form-control") }}
             </div>
-            <div class="col-12 col-md-6 mt-3">
-              <a class="btn btn-secondary w-100" href="{{ url_for('register') }}" type="link">Register</a>
+            <div class="row gx-3">
+              {% if form.__class__.__name__ == 'LoginForm' %}
+                <div class="col-12 col-md-6 mt-3">
+                  {{ form.submit(class_="btn btn-primary w-100") }}
+                </div>
+                <div class="col-12 col-md-6 mt-3">
+                  <a class="btn btn-secondary w-100" href="{{ url_for('register') }}" type="link">Register</a>
+                </div>
+              {% else %}
+                <div class="col-12 mt-3">
+                  {{ form.submit(class_="btn btn-primary w-100") }}
+                </div>
+              {% endif %}
             </div>
-          {% else %}
-            <div class="col-12 mt-3">
-              {{ form.submit(class_="btn btn-primary w-100") }}
-            </div>
-          {% endif %}
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   </div>

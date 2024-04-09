@@ -5,7 +5,7 @@ from flask_bootstrap import Bootstrap5
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash
-from database import database, db, ListItem
+from database import database, db, ListItem, UserSettings, User
 from forms import LoginForm, RegisterForm
 from turbo_flask import Turbo
 
@@ -65,6 +65,7 @@ class ToDoList():
 # ROUTES
 @app.route('/')
 def home():
+    return redirect(url_for('lists'))
     return render_template('index.html')
 
 
@@ -78,9 +79,8 @@ def login():
                 login_user(user)
                 app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = current_user.settings.theme_color
                 return redirect(url_for('lists'))
-            else:
-                flash('Incorrect login.')
-                return render_template('login.html', form=form)
+            flash('Incorrect login.', 'warning')
+            return render_template('login.html', form=form)
     return render_template('login.html', form=form)
 
 
@@ -182,7 +182,7 @@ def calendar(view):
                 lists[todo_list.title] = todo_list
     if turbo.can_stream():
         return turbo.stream(
-            turbo.update(render_template(f'calendar_{view}.html', view=view, lists=lists, editing=request.args.get('editing') if request.args.get('editing') else list_name), target='turboCalendar'))
+            turbo.update(render_template('components/list_display.html', view=view, lists=lists, editing=request.args.get('editing') if request.args.get('editing') else list_name), target='turboCalendar'))
     return render_template(f'calendar.html', view=view, lists=lists, editing=request.args.get('editing') if request.args.get('editing') else list_name)
 
 
@@ -251,6 +251,31 @@ def logout():
     logout_user()
     app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = None
     return redirect(url_for('login'))
+
+
+@app.route('/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+    entered_pw = request.form.to_dict()['password']
+    with app.app_context():
+        user = database.get_user(email=current_user.email)
+        if user and check_password_hash(user.password, entered_pw):
+            delete_q = ListItem.__table__.delete().where(
+                ListItem.user_id == current_user.id)
+            db.session.execute(delete_q)
+            delete_q = UserSettings.__table__.delete().where(
+                UserSettings.user_id == current_user.id)
+            db.session.execute(delete_q)
+            delete_q = User.__table__.delete().where(
+                User.id == current_user.id)
+            db.session.execute(delete_q)
+            db.session.commit()
+            logout_user()
+            app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = None
+            flash('Your account has been deleted.')
+            return redirect(url_for('register'))
+        flash('Incorrect password. Could not delete account.')
+        return render_template('settings.html')
 
 
 # RUN SERVER

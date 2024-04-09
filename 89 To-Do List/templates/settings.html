@@ -3,6 +3,7 @@
   <h1 class="my-5">Settings</h1>
   <div class="col-12 col-md-6 my-3">
     <form action="{{ url_for('settings') }}" method="post">
+
       <div class="form-check form-switch my-3">
         {% if current_user.settings.show_future_list %}
           <input class="form-check-input" type="checkbox" role="switch" id="showFutureList" name="show_future_list" onchange="this.form.submit()" checked>
@@ -11,6 +12,7 @@
         {% endif %}
         <label class="form-check-label" for="showFutureList">Show Future List</label>
       </div>
+
       <div class="form-check form-switch my-3">
         {% if current_user.settings.show_overdue_list %}
           <input class="form-check-input" type="checkbox" role="switch" id="showOverdueList" name="show_overdue_list" onchange="this.form.submit()" checked>
@@ -19,6 +21,7 @@
         {% endif %}
         <label class="form-check-label" for="showOverdueList">Show Overdue List</label>
       </div>
+
       <div class="form-group my-3">
         <label for="defaultCalendarView">Default Calendar View</label>
         <select class="form-control" name="default_calendar_view" id="defaultCalendarView" onchange="this.form.submit()">
@@ -31,6 +34,7 @@
           {% endfor %}
         </select>
       </div>
+
       <div class="form-group my-3">
         <label for="themeColor">Theme Color</label>
         <select class="form-control" name="theme_color" id="themeColor" onchange="this.form.submit()">
@@ -45,5 +49,35 @@
       </div>
     </form>
   </div>
+
   <a href="{{ url_for('logout') }}" class="btn btn-primary my-3">Logout</a>
+
+  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    Delete Account
+  </button>
+
+  {% include 'components/flash_messages.html' %}
+
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">Are you sure you want to delete your account?</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>All your account data will be deleted. You cannot recover your account after deleting. To delete your account, type your password below.</p>
+          <div data-turbo="false">
+            <form action="/delete-account" method="post" id="deleteAccount">
+              <input type="password" name="password" id="password" placeholder="Password">
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" form="deleteAccount" class="btn btn-danger">Delete Account</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

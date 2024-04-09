@@ -6,9 +6,9 @@
   <meta name="turbo-refresh-method" content="morph">
   <meta name="turbo-refresh-scroll" content="preserve">
   <title>To-Do List</title>
+  {{ turbo() }}
   {{ bootstrap.load_css() }}
   {{ bootstrap.load_js() }}
-  {{ turbo() }}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
