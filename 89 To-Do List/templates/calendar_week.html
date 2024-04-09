@@ -1,9 +1,0 @@
-<div class="row">
-  {% for list in lists %}
-    <div class="col-{{ '12' if lists.index(list) == 0 else 'xl-4 col-lg-6' }}">
-      {% with list = list%}
-        {% include 'components/list.html' %}
-      {% endwith %}
-    </div>
-  {% endfor %}
-</div>

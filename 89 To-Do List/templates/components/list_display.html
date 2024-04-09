@@ -1,9 +1,11 @@
 <div class="row">
   {% for list in lists %}
-    <div class="col-12 col-xl-4 col-lg-{{ 12 if list == 'Today' else 6 }}">
-      {% with list = lists[list] %}
-        {% include 'components/list.html' %}
-      {% endwith %}
-    </div>
+    {% with styles = 'col-12' if list == 'Today' else 'col-xl-4 col-lg-6' if view == 'week' else 'col-12' if view == 'month' or view == 'year' else 'col-12 col-xl-4' + 'col-lg-12' if list == 'Today' else 'col-lg-6' %}
+      <div class="{{ styles }}">
+        {% with list = lists[list] %}
+          {% include 'components/list.html' %}
+        {% endwith %}
+      </div>
+    {% endwith %}
   {% endfor %}
 </div>

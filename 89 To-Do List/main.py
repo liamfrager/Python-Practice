@@ -154,7 +154,7 @@ def calendar(view):
             )
             db.session.add(new_list_item)
             db.session.commit()
-    lists = []
+    lists = {}
     today = date.today()
     match view:
         case 'week':
@@ -162,13 +162,13 @@ def calendar(view):
                 todo_list = ToDoList('Today' if i == 0 else (
                     today + timedelta(days=i)).strftime('%A'), i, i + 1)
                 todo_list.route = 'calendar'
-                lists.append(todo_list)
+                lists[todo_list.title] = todo_list
         case 'month':
             for i in range(monthrange(today.year, today.month)[1]):
                 todo_list = ToDoList('Today' if i == today.day - 1 else (today - timedelta(
                     days=today.day) + timedelta(days=i + 1)).strftime('%B %-d'), i - today.day + 1, i - today.day + 2)
                 todo_list.route = 'calendar'
-                lists.append(todo_list)
+                lists[todo_list.title] = todo_list
         case 'year':
             for i in range(12):
                 this_month_start = today - timedelta(days=today.day - 1)
@@ -179,7 +179,7 @@ def calendar(view):
                 todo_list = ToDoList(month_start.strftime(
                     '%B'), -(today - month_start).days, -(today - month_start).days + monthrange(today.year, month_start.month)[1])
                 todo_list.route = 'calendar'
-                lists.append(todo_list)
+                lists[todo_list.title] = todo_list
     if turbo.can_stream():
         return turbo.stream(
             turbo.update(render_template(f'calendar_{view}.html', view=view, lists=lists, editing=request.args.get('editing') if request.args.get('editing') else list_name), target='turboCalendar'))
@@ -235,7 +235,6 @@ def settings():
     if request.method == 'POST':
         with app.app_context():
             settings = request.form.to_dict()
-            print(settings)
             current_user.settings.theme_color = None if settings[
                 'theme_color'] == 'default' else settings['theme_color']
             current_user.settings.show_future_list = 'show_future_list' in settings
@@ -261,5 +260,5 @@ if __name__ == '__main__':
 
 # TODO: only show first of date in list
 # TODO: add ability to move ahead/back a year/month/week
-# TODO: combine calendar_views into list_display
 # TODO: figure out what the home page is for
+# TODO: auto scroll month/year calendar views to current day/month
