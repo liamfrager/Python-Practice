@@ -22,3 +22,7 @@
     background: none;
     font-size: 1.2em;
 }
+
+.to-do-list {
+    scroll-margin-top: 200px;
+}

@@ -284,5 +284,4 @@ if __name__ == '__main__':
 
 
 # TODO: add ability to move ahead/back a year/month/week
-# TODO: auto scroll month/year calendar views to current day/month
 # TODO: fix tooltips not showing up on refresh
