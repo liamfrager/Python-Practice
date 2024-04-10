@@ -283,7 +283,6 @@ if __name__ == '__main__':
     app.run(port=4000, debug=True)
 
 
-# TODO: only show first of date in list
 # TODO: add ability to move ahead/back a year/month/week
-# TODO: figure out what the home page is for
 # TODO: auto scroll month/year calendar views to current day/month
+# TODO: fix tooltips not showing up on refresh

@@ -7,20 +7,24 @@
         </a>
       </li> -->
       <li>
-        <a href="{{ url_for('lists') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Lists">
+        <a href="{{ url_for('lists') }}" class="nav-link py-3 px-2" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Lists">
           <i class="bi-list-check fs-1"></i>
         </a>
       </li>
       <li>
-        <a href="{{ url_for('calendar', view=current_user.settings.default_calendar_view if current_user.is_authenticated else 'week') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Calendar">
-          <i class="bi-table fs-1"></i>
+        <a href="{{ url_for('calendar', view=current_user.settings.default_calendar_view if current_user.is_authenticated else 'week') }}" class="nav-link py-3 px-2" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Calendar">
+          <i class="bi-calendar3 fs-1"></i>
         </a>
       </li>
       <li>
-        <a href="{{ url_for('settings') }}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Settings">
+        <a href="{{ url_for('settings') }}" class="nav-link py-3 px-2" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Settings">
           <i class="bi-gear fs-1"></i>
         </a>
       </li>
     </ul>
   </div>
 </div>
+<script>
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+</script>

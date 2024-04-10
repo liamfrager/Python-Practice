@@ -12,10 +12,12 @@
       {% endif %}
     {% else %}
       <input class="list-input{{ ' text-decoration-line-through' if item.is_completed }}" type="text" value="{{ item.text }}">
-      {% if list.title == 'This Week' %}
-        <span class="date-input{{ ' text-decoration-line-through' if item.is_completed }}">{{ item.due_date.strftime('%A') }}</span>
-      {% elif list.title in ['This Month', 'Future'] or view == 'year' %}
-        <span class="date-input{{ ' text-decoration-line-through' if item.is_completed }}">{{ item.due_date.strftime('%b %-d') }}</span>
+      {% if show_date %}
+        {% if list.title == 'This Week' %}
+          <span class="date-input{{ ' text-decoration-line-through' if item.is_completed }}">{{ item.due_date.strftime('%A') }}</span>
+        {% elif list.title in ['This Month', 'Future'] or view == 'year' %}
+          <span class="date-input{{ ' text-decoration-line-through' if item.is_completed }}">{{ item.due_date.strftime('%b %-d') }}</span>
+        {% endif %}
       {% endif %}
     {% endif %}
   {% endif %}

@@ -11,7 +11,9 @@
     <ul class="list-group list-group-flush">
       {% with items = list['items'] %}
         {% for item in items %}
-          {% include 'components/list_item.html'   %}
+          {% with show_date = loop.previtem.due_date != item.due_date if loop.previtem else True %}
+            {% include 'components/list_item.html' %}
+          {% endwith %}
         {% endfor %}
       {% endwith %}
     </ul>
