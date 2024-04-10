@@ -9,6 +9,8 @@
     {% endwith %}
   {% endfor %}
 </div>
-<script>
-  document.getElementById("{{ today_date.strftime('%B') if view == 'year' else 'Today' }}").scrollIntoView()
-</script>
+{% if not request.args.get('offset') %}
+  <script>
+    document.getElementById("{{ today_date.strftime('%B') if view == 'year' else 'Today' }}").scrollIntoView()
+  </script>
+{% endif %}

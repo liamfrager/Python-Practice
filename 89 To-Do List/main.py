@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from calendar import monthrange
+from calendar import monthrange, leapdays
 from flask import Flask, flash, render_template, redirect, request, url_for
 from flask_bootstrap import Bootstrap5
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
@@ -8,6 +8,7 @@ from werkzeug.security import check_password_hash
 from database import database, db, ListItem, UserSettings, User
 from forms import LoginForm, RegisterForm
 from turbo_flask import Turbo
+from jinja2 import Environment
 
 # APP
 app = Flask(__name__)
@@ -41,6 +42,13 @@ with app.app_context():
 @app.context_processor
 def add_variables():
     return {'today_date': date.today()}
+
+
+def to_month_string(value):
+    return date(1, int(value), 1).strftime('%B')
+
+
+app.jinja_env.filters['to_month_string'] = to_month_string
 
 
 class ToDoList():
@@ -156,20 +164,35 @@ def calendar(view):
             db.session.commit()
     lists = {}
     today = date.today()
+    date_offset = int(request.args.get('offset')
+                      ) if request.args.get('offset') else 0
     match view:
         case 'week':
             for i in range(7):
-                todo_list = ToDoList('Today' if i == 0 else (
-                    today + timedelta(days=i)).strftime('%A'), i, i + 1)
+                j = i + date_offset * 7
+                todo_list = ToDoList('Today' if j == 0 else (
+                    today + timedelta(days=j)).strftime('%A'), j, j + 1)
                 todo_list.route = 'calendar'
                 lists[todo_list.title] = todo_list
         case 'month':
-            for i in range(monthrange(today.year, today.month)[1]):
+            offset_year = today.year + (date_offset // 12)
+            offset_month = 12 if ((
+                today.month + date_offset) % 12) == 0 else (today.month + date_offset) % 12
+            offset_days = 0
+            for i in range(date_offset) if date_offset >= 0 else range(-1, date_offset - 1, -1):
+                offset_days += monthrange(today.year + ((today.month + i) // 12), 12 if (
+                    today.month + i) % 12 == 0 else (today.month + i) % 12)[
+                    1] * (-1 if date_offset < 0 else 1)
+            for i in range(offset_days, offset_days + monthrange(offset_year, offset_month)[1]):
                 todo_list = ToDoList('Today' if i == today.day - 1 else (today - timedelta(
                     days=today.day) + timedelta(days=i + 1)).strftime('%B %-d'), i - today.day + 1, i - today.day + 2)
                 todo_list.route = 'calendar'
                 lists[todo_list.title] = todo_list
+
         case 'year':
+            offset_days = 365 * date_offset + \
+                (leapdays(today.year, today.year + date_offset) if date_offset >=
+                 0 else -leapdays(today.year + date_offset, today.year))
             for i in range(12):
                 this_month_start = today - timedelta(days=today.day - 1)
                 month_start = this_month_start - \
@@ -177,7 +200,7 @@ def calendar(view):
                     timedelta(days=sum([monthrange(today.year, x)[1]
                               for x in range(1, i + 1)]))
                 todo_list = ToDoList(month_start.strftime(
-                    '%B'), -(today - month_start).days, -(today - month_start).days + monthrange(today.year, month_start.month)[1])
+                    '%B'), -(today - month_start).days + offset_days, -(today - month_start).days + monthrange(today.year, month_start.month)[1] + offset_days)
                 todo_list.route = 'calendar'
                 lists[todo_list.title] = todo_list
     if turbo.can_stream():
@@ -283,5 +306,6 @@ if __name__ == '__main__':
     app.run(port=4000, debug=True)
 
 
-# TODO: add ability to move ahead/back a year/month/week
 # TODO: fix tooltips not showing up on refresh
+# TODO: fix week scrolling display (start on mon/sun)
+# TODO: add setting for week to start on monday or sunday.
