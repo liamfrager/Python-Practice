@@ -32,6 +32,7 @@ class UserSettings(db.Model):
         String(15), nullable=True, default=None)
     default_calendar_view: Mapped[str] = mapped_column(
         String(7), default='week')
+    week_start: Mapped[int] = mapped_column(Integer, default=1)
     show_future_list: Mapped[bool] = mapped_column(Boolean, default=True)
     show_overdue_list: Mapped[bool] = mapped_column(Boolean, default=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
