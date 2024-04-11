@@ -17,8 +17,8 @@
   <div class="container-fluid">
     <div class="row">
       {% include 'components/sidebar.html'   %}
-      <div class="col-sm p-3 min-vh-100">
-        <div class="container">
+      <div class="col-sm min-vh-100">
+        <div class="container body-content">
           {% block content %}{% endblock %}
         </div>
         {% include 'components/footer.html'   %}

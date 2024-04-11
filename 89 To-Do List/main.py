@@ -149,7 +149,7 @@ def calendar_week():
         j = i - weekday(date.today().year, date.today().month,
                         date.today().day) - current_user.settings.week_start + date_offset * 7
         todo_list = ToDoList('Today' if j == 0 else (
-            date.today() + timedelta(days=j)).strftime('%A – %-m/%-d' if request.args.get('offset') else '%A'), j, j + 1)
+            date.today() + timedelta(days=j)).strftime('%A – %-d' if request.args.get('offset') else '%A'), j, j + 1)
         todo_list.route = 'calendar'
         lists[todo_list.title] = todo_list
 
@@ -326,7 +326,4 @@ def delete_account():
 
 # RUN SERVER
 if __name__ == '__main__':
-    app.run(port=4000, debug=True)
-
-
-# TODO: stop sticky header from scrolling
+    app.run(port=4000)
