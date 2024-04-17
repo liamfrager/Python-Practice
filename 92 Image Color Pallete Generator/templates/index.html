@@ -7,20 +7,23 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-  <h1>Upload image here to find its most common colors!</h1>
+  <h1>Image Color Pallete Generator</h1>
   <form action="{{ url_for('home') }}" method="post" enctype="multipart/form-data">
-    <label for="image">Upload image here.</label>
-    <input type="file" name="image_file" id="image_file" onchange="this.form.submit()">
-    <input type="text" name="image_url" id="image_url">
+    <h3>Upload image here to find its most common colors!</h3>
+    <input type="file" name="image_file" id="image_file" accept=".png,.jpg,.jpeg,.gif,.img" onchange="this.form.submit()"><br>
+    <p><strong>or</strong></p>
+    <input type="text" name="image_url" id="image_url" placeholder="Image URL"><br>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
     <input type="submit" value="Scan colors">
   </form>
   {% if image %}
-    <img src="{{ image }}" alt="Your uploaded image">
+    <img class="image-display" src="{{ image }}" alt="Your uploaded image">
   {% endif %}
   {% if colors %}
     {% for color in colors %}
-      <div class="color-display" style="background: {{ color }};">
-
+      <div class="color-display">
+        <div class="color" style="background: {{ color }};"></div>
+        <div class="hexcode">{{ color }}</div>
       </div>
     {% endfor %}
   {% endif %}
