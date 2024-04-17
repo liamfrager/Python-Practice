@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, request
 from PIL import Image
 from io import BytesIO
 import requests as req
