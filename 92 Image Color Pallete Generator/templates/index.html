@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Color Pallete Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <h1>Upload image here to find its most common colors!</h1>
+  <form action="{{ url_for('home') }}" method="post" enctype="multipart/form-data">
+    <label for="image">Upload image here.</label>
+    <input type="file" name="image_file" id="image_file" onchange="this.form.submit()">
+    <input type="text" name="image_url" id="image_url">
+    <input type="submit" value="Scan colors">
+  </form>
+  {% if image %}
+    <img src="{{ image }}" alt="Your uploaded image">
+  {% endif %}
+  {% if colors %}
+    {% for color in colors %}
+      <div class="color-display" style="background: {{ color }};">
+
+      </div>
+    {% endfor %}
+  {% endif %}
+</body>
+</html>
