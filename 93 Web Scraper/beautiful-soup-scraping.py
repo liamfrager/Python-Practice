@@ -1,4 +1,3 @@
-import json
 from bs4 import BeautifulSoup
 import requests as req
 from datetime import date
@@ -42,7 +41,3 @@ for listing in data:
 listings = pd.DataFrame(listings)
 
 listings.to_csv(f'{date.today()}-homes.csv')
-
-# TODO: figure out how to load page at particular scroll point with bs4
-# TODO: repeat scraping until full page is loaded
-# TODO: scroll through multiple pages.
