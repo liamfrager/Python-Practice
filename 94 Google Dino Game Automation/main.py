@@ -1,7 +1,6 @@
 from selenium import webdriver
 from PIL import ImageGrab
 import pyautogui as gui
-import math
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_experimental_option("detach", True)
@@ -11,7 +10,6 @@ driver.get('https://chromedino.com/')
 driver.maximize_window()
 gui.click(400, 400)
 gui.press('up')
-# gui.mouseInfo()
 
 jumps = 0
 while True:
