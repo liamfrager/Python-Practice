@@ -1,5 +1,6 @@
 from settings import *
 import turtle
+from laser import Laser
 
 
 class Ship(turtle.Turtle):
@@ -12,6 +13,7 @@ class Ship(turtle.Turtle):
         self.setheading(90)
         self.shapesize(3, 3)
         self.goto(x=0, y=SCREEN_BOT + 50)
+        self.laser = Laser()
 
     def move_left(self):
         if self.xcor() > SCREEN_L + 10:
@@ -24,7 +26,7 @@ class Ship(turtle.Turtle):
             self.screen.update()
 
     def fire(self):
-        print('fire')
+        self.laser.goto(self.pos())
 
     def bind_movement(self):
         self.screen.onkey(self.move_left, 'a')
