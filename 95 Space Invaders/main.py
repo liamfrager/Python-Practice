@@ -16,12 +16,18 @@ class SpaceInvaders:
         self.screen.bgcolor('black')
         self.screen.getcanvas().config(cursor="none")
         self.screen.tracer(0)
+        self.screen.listen()
+        # Ship
+        self.screen.register_shape('ship', SHIP_COORDS)
+        self.ship = Ship(self.screen)
+        self.ship.bind_movement()
         # Aliens
         self.screen.register_shape('alien1', ALIEN_1_COORDS)
         self.screen.register_shape('alien2', ALIEN_2_COORDS)
         self.screen.register_shape('alien3', ALIEN_3_COORDS)
         self.screen.register_shape('ufo', UFO_COORDS)
         self.create_aliens()
+        # Other
         self.screen.update()
         self.screen.mainloop()
 
@@ -32,7 +38,8 @@ class SpaceInvaders:
             species = 1 if i == 0 else 3 if i > 2 else 2
             for j in range(11):
                 alien = Alien(species)
-                alien.goto(x=-150 + (j * 40), y=150 - (i * 40))
+                alien.goto(x=SCREEN_L + 10 + (j * ALIEN_X_GAP),
+                           y=150 - (i * ALIEN_Y_GAP))
                 row.append(alien)
 
 
