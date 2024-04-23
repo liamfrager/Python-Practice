@@ -1,7 +1,7 @@
 from settings import *
-from turtle import Turtle
+import turtle
 
 
-class Ship(Turtle):
+class Ship(turtle.Turtle):
     def __init__(self) -> None:
         super.__init__()
