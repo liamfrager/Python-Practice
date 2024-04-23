@@ -35,6 +35,8 @@ class Aliens():
         self.all_aliens: list[Alien] = []
         self.move_direction = 1
         self.create_aliens()
+        self.last_dead = None
+        self.move_speed = 500000
 
     def create_aliens(self):
         for i in range(5):
@@ -46,23 +48,32 @@ class Aliens():
                 self.all_aliens.append(alien)
 
     def move(self):
+        self.clear_explosions()
         if self.check_for_edge():
             self.move_direction *= -1
             for alien in self.all_aliens:
-                alien.goto(alien.xcor(), alien.ycor() - 20)
+                alien.goto(alien.xcor(), alien.ycor() -
+                           ALIEN_MOVE_DISTANCE * 3)
         for alien in self.all_aliens:
             alien.goto(alien.xcor() + ALIEN_MOVE_DISTANCE *
                        self.move_direction, alien.ycor())
 
     def check_for_laser(self, laser: Laser):
         for alien in self.all_aliens:
-            if laser.hits(alien):
+            if laser.hits(alien, 18):
+                self.clear_explosions()
                 laser.goto(GRAVEYARD)
                 alien.explode()
+                self.last_dead = alien
                 self.all_aliens.remove(alien)
+                self.move_speed -= 6000
 
     def check_for_edge(self):
         for alien in self.all_aliens:
             if alien.xcor() > SCREEN_R - ALIEN_MOVE_DISTANCE * 4 or alien.xcor() < SCREEN_L + ALIEN_MOVE_DISTANCE * 3:
                 return True
         return False
+
+    def clear_explosions(self):
+        if self.last_dead != None:
+            self.last_dead.clear()
