@@ -13,8 +13,10 @@ class Laser(turtle.Turtle):
         self.goto(GRAVEYARD)
 
     def move(self):
+        if self.ycor() > SCREEN_TOP:
+            self.goto(GRAVEYARD)
         if self.pos() != GRAVEYARD:
             self.goto(self.xcor(), self.ycor() + LASER_MOVE_DISTANCE)
 
     def hits(self, alien):
-        return abs(self.xcor() - alien.xcor()) < 15 and abs(self.ycor() - alien.ycor()) < 15
+        return abs(self.xcor() - alien.xcor()) < 18 and abs(self.ycor() - alien.ycor()) < 18

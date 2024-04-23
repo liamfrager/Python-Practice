@@ -26,7 +26,8 @@ class Ship(turtle.Turtle):
             self.screen.update()
 
     def fire(self):
-        self.laser.goto(self.pos())
+        if self.laser.pos() == GRAVEYARD:
+            self.laser.goto(self.pos())
 
     def bind_movement(self):
         self.screen.onkey(self.move_left, 'a')

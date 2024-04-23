@@ -1,8 +1,8 @@
 from settings import *
 from turtle import Screen
-from alien import Alien
+from aliens import Aliens
 from ship import Ship
-import time
+from datetime import datetime
 
 
 class SpaceInvaders:
@@ -28,29 +28,20 @@ class SpaceInvaders:
         self.ship.bind_movement()
         # Aliens
         self.screen.register_shape('ufo', UFO_COORDS)
-        self.create_aliens()
+        self.aliens = Aliens()
         # Other
         self.start_game()
         self.screen.mainloop()
 
     def start_game(self):
+        start_time = datetime.now()
         while True:
             self.ship.laser.move()
-            for alien in self.aliens:
-                if self.ship.laser.hits(alien):
-                    self.ship.laser.goto(GRAVEYARD)
-                    alien.die()
+            if (datetime.now() - start_time).microseconds > 500000:
+                self.aliens.move()
+                start_time = datetime.now()
+            self.aliens.check_for_laser(self.ship.laser)
             self.screen.update()
-
-    def create_aliens(self):
-        self.aliens: list[Alien] = []
-        for i in range(5):
-            species = 1 if i == 0 else 3 if i > 2 else 2
-            for j in range(11):
-                alien = Alien(self.screen, species)
-                alien.goto(x=SCREEN_L + 20 + (j * ALIEN_X_GAP),
-                           y=150 - (i * ALIEN_Y_GAP))
-                self.aliens.append(alien)
 
 
 app = SpaceInvaders()
