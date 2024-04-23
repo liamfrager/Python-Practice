@@ -15,22 +15,25 @@ class SpaceInvaders:
         )
         self.screen.bgcolor('black')
         self.screen.getcanvas().config(cursor="none")
+        self.screen.tracer(0)
         # Aliens
-        self.screen.register_shape('alien1.gif')
-        self.screen.register_shape('alien2.gif')
-        self.screen.register_shape('alien3.gif')
+        self.screen.register_shape('alien1', ALIEN_1_COORDS)
+        self.screen.register_shape('alien2', ALIEN_2_COORDS)
+        self.screen.register_shape('alien3', ALIEN_3_COORDS)
+        self.screen.register_shape('ufo', UFO_COORDS)
         self.create_aliens()
-        print(self.screen._shapes)
+        self.screen.update()
         self.screen.mainloop()
 
     def create_aliens(self):
-        self.aliens = []
-        for _ in range(5):
+        self.aliens: list[list[Alien]] = []
+        for i in range(5):
             row = []
-            for _ in range(11):
-                row.append(Alien())
-        for alien in self.aliens:
-            pass
+            species = 1 if i == 0 else 3 if i > 2 else 2
+            for j in range(11):
+                alien = Alien(species)
+                alien.goto(x=-150 + (j * 40), y=150 - (i * 40))
+                row.append(alien)
 
 
 app = SpaceInvaders()
