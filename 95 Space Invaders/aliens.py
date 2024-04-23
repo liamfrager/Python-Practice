@@ -7,6 +7,7 @@ class Alien(turtle.Turtle):
     def __init__(self, species) -> None:
         super().__init__()
         self.penup()
+        self.species = species
         self.alien_color = ALIEN_1_COLOR if species == 1 else ALIEN_2_COLOR if species == 2 else ALIEN_3_COLOR if species == 3 else UFO_COLOR
         self.color(self.alien_color)
         self.alien_shape = 'alien1' if species == 1 else 'alien2' if species == 2 else 'alien3' if species == 3 else 'ufo'
@@ -44,7 +45,7 @@ class Aliens():
             for j in range(11):
                 alien = Alien(species)
                 alien.goto(x=SCREEN_L + ALIEN_MOVE_DISTANCE * 3 + (j * ALIEN_X_GAP),
-                           y=150 - (i * ALIEN_Y_GAP))
+                           y=250 - (i * ALIEN_Y_GAP))
                 self.all_aliens.append(alien)
 
     def move(self):
@@ -67,6 +68,7 @@ class Aliens():
                 self.last_dead = alien
                 self.all_aliens.remove(alien)
                 self.move_speed -= 6000
+                return (4 - alien.species) * 10
 
     def check_for_edge(self):
         for alien in self.all_aliens:

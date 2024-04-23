@@ -3,6 +3,7 @@ from turtle import Screen
 from aliens import Aliens
 from ship import Ship
 from barriers import Barriers
+from scoreboard import Scoreboard
 from datetime import datetime
 
 
@@ -32,27 +33,31 @@ class SpaceInvaders:
         self.aliens = Aliens()
         # Barriers
         self.barriers = Barriers()
+        # Scoreboard
+        self.scoreboard = Scoreboard()
         # Other
         self.start_game()
         self.screen.mainloop()
 
     def start_game(self):
-        self.start_time = datetime.now()
+        self.is_playing = True
         self.play_game()
 
     def play_game(self):
-        self.ship.laser.move()
-        if (datetime.now() - self.start_time).microseconds > self.aliens.move_speed:
-            self.aliens.move()
-            self.start_time = datetime.now()
-        self.barriers.check_for_laser(self.ship.laser)
-        self.barriers.check_for_aliens(self.aliens.all_aliens)
-        self.aliens.check_for_laser(self.ship.laser)
-        self.screen.update()
-        if len(self.aliens.all_aliens) > 0 and not self.aliens.all_aliens[-1].ycor() <= self.ship.ycor() + 20:
-            self.play_game()
-        else:
-            self.game_over()
+        start_time = datetime.now()
+        while self.is_playing:
+            self.ship.laser.move()
+            if (datetime.now() - start_time).microseconds > self.aliens.move_speed:
+                self.aliens.move()
+                start_time = datetime.now()
+            self.barriers.check_for_laser(self.ship.laser)
+            self.barriers.check_for_aliens(self.aliens.all_aliens)
+            self.scoreboard.score_points(
+                self.aliens.check_for_laser(self.ship.laser))
+            self.screen.update()
+            if len(self.aliens.all_aliens) == 0 or self.aliens.all_aliens[-1].ycor() <= self.ship.ycor() + 20:
+                self.is_playing = False
+        self.game_over()
 
     def game_over(self):
         if len(self.aliens.all_aliens) == 0:
@@ -66,3 +71,5 @@ app = SpaceInvaders()
 # TODO: add win condition
 # TODO: add lose condition
 # TODO: fix barrier breaking
+# TODO: add wiggle animation
+# TODO: add alien lasers
