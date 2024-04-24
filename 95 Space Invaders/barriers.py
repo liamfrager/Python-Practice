@@ -1,6 +1,6 @@
 from settings import *
 import turtle
-from laser import Laser
+from laser import ShipLaser, AlienLaser
 from aliens import Alien
 
 
@@ -31,12 +31,14 @@ class Barriers(turtle.Turtle):
                             barrier = Barrier(position)
                             self.all_barriers.append(barrier)
 
-    def check_for_laser(self, laser: Laser):
+    def is_hit_by(self, laser: ShipLaser | AlienLaser):
         for barrier in self.all_barriers:
             if laser.hits(barrier, 6):
                 laser.goto(GRAVEYARD)
                 barrier.goto(GRAVEYARD)
                 self.all_barriers.remove(barrier)
+                return True
+        return False
 
     def check_for_aliens(self, aliens: list[Alien]):
         for barrier in self.all_barriers:

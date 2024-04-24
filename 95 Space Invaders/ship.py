@@ -1,19 +1,45 @@
 from settings import *
 import turtle
-from laser import Laser
+from laser import ShipLaser
 
 
 class Ship(turtle.Turtle):
-    def __init__(self, screen: turtle._Screen) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.screen = screen
         self.penup()
         self.color(SHIP_COLOR)
         self.shape('ship')
         self.setheading(90)
         self.shapesize(3, 3)
+        self.laser = ShipLaser()
+        self.lives = []
+        for _ in range(3):
+            self.add_life()
         self.goto(x=0, y=SCREEN_BOT + 50)
-        self.laser = Laser()
+
+    def reset(self):
+        self.clear()
+        self.showturtle()
+
+    def fire(self):
+        if self.laser.pos() == GRAVEYARD:
+            self.laser.goto(self.pos())
+
+    def explode(self):
+        angle = 150
+        side = 6
+        pointies = 9
+        rotation = 360/pointies
+        self.pendown()
+        for _ in range(pointies):
+            self.forward(side)
+            self.right(angle)
+            self.forward(side)
+            self.left(angle)
+            self.right(rotation)
+        self.penup()
+        self.hideturtle()
+        self.screen.update()
 
     def move_left(self):
         if self.xcor() > SCREEN_L + 10:
@@ -25,10 +51,6 @@ class Ship(turtle.Turtle):
             self.goto(self.xcor() + SHIP_MOVE_DISTANCE, self.ycor())
             self.screen.update()
 
-    def fire(self):
-        if self.laser.pos() == GRAVEYARD:
-            self.laser.goto(self.pos())
-
     def bind_movement(self):
         self.screen.onkey(self.move_left, 'a')
         self.screen.onkey(self.move_left, 'Left')
@@ -37,3 +59,19 @@ class Ship(turtle.Turtle):
         self.screen.onkey(self.fire, 'w')
         self.screen.onkey(self.fire, 'Up')
         self.screen.onkey(self.fire, 'space')
+
+    def unbind_movement(self):
+        keys = ['a', 'Left', 'd', 'Right', 'w', 'Up', 'space']
+        for key in keys:
+            self.screen.onkey(None, key)
+
+    def add_life(self):
+        self.goto(0, 0)
+        # self.goto(SCREEN_R - (i + 1) * 50, SCREEN_TOP - 50)
+        id = self.stamp()
+        self.lives.append(id)
+        print(self.lives)
+
+    def lose_a_life(self):
+        id = self.lives.pop()
+        self.clearstamp(id)

@@ -7,7 +7,6 @@ class Scoreboard(turtle.Turtle):
         super().__init__()
         self.penup()
         self.hideturtle()
-        self.goto(SCREEN_L + 50, SCREEN_TOP - 50)
         self.color('white')
         self.score = 0
         self.update_score()
@@ -18,6 +17,7 @@ class Scoreboard(turtle.Turtle):
 
     def update_score(self):
         self.clear()
+        self.goto(SCREEN_L + 50, SCREEN_TOP - 50)
         self.write(
             f'Score: {self.score}',
             align='left',

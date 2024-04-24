@@ -1,6 +1,7 @@
 from settings import *
 import turtle
-from laser import Laser
+import random
+from laser import AlienLaser, ShipLaser
 
 
 class Alien(turtle.Turtle):
@@ -29,27 +30,31 @@ class Alien(turtle.Turtle):
             self.right(rotation)
         self.penup()
         self.goto(GRAVEYARD)
+        self.screen.ontimer(self.clear, 300)
 
 
 class Aliens():
     def __init__(self) -> None:
         self.all_aliens: list[Alien] = []
         self.move_direction = 1
+        self.wave_number = 0
         self.create_aliens()
-        self.last_dead = None
-        self.move_speed = 500000
+        self.move_speed = ALIEN_MOVE_SPEED
+        self.laser_chance = 3000
+        self.lasers: list[AlienLaser] = []
 
     def create_aliens(self):
         for i in range(5):
             species = 1 if i == 0 else 3 if i > 2 else 2
             for j in range(11):
                 alien = Alien(species)
-                alien.goto(x=SCREEN_L + ALIEN_MOVE_DISTANCE * 3 + (j * ALIEN_X_GAP),
-                           y=250 - (i * ALIEN_Y_GAP))
+                x = SCREEN_L + ALIEN_MOVE_DISTANCE * 3
+                y = 250 - (self.wave_number * 100)
+                y = 0 if y < 0 else y
+                alien.goto(x + (j * ALIEN_X_GAP), y - (i * ALIEN_Y_GAP))
                 self.all_aliens.append(alien)
 
     def move(self):
-        self.clear_explosions()
         if self.check_for_edge():
             self.move_direction *= -1
             for alien in self.all_aliens:
@@ -59,16 +64,24 @@ class Aliens():
             alien.goto(alien.xcor() + ALIEN_MOVE_DISTANCE *
                        self.move_direction, alien.ycor())
 
-    def check_for_laser(self, laser: Laser):
+    def check_for_laser(self, laser: ShipLaser):
         for alien in self.all_aliens:
             if laser.hits(alien, 18):
-                self.clear_explosions()
                 laser.goto(GRAVEYARD)
                 alien.explode()
-                self.last_dead = alien
                 self.all_aliens.remove(alien)
                 self.move_speed -= 6000
                 return (4 - alien.species) * 10
+
+    def shoot_lasers(self):
+        for alien in self.all_aliens:
+            if random.randint(0, self.laser_chance) == self.laser_chance:
+                self.lasers.append(AlienLaser(alien))
+
+    def clear_lasers(self):
+        for laser in self.lasers:
+            laser.goto(GRAVEYARD)
+        self.lasers = []
 
     def check_for_edge(self):
         for alien in self.all_aliens:
@@ -76,6 +89,7 @@ class Aliens():
                 return True
         return False
 
-    def clear_explosions(self):
-        if self.last_dead != None:
-            self.last_dead.clear()
+    def reset(self):
+        self.move_speed = ALIEN_MOVE_SPEED
+        self.wave_number += 1
+        self.create_aliens()
