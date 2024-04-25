@@ -65,6 +65,10 @@ class Ship(turtle.Turtle):
         for key in keys:
             self.screen.onkey(None, key)
 
+    def follow_cursor(self, x, y):
+        if x > SCREEN_L + 10 and x < SCREEN_R - 60:
+            self.goto(x, self.ycor())
+
     def add_life(self):
         self.goto(0, 0)
         # self.goto(SCREEN_R - (i + 1) * 50, SCREEN_TOP - 50)

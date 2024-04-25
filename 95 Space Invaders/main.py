@@ -30,6 +30,7 @@ class SpaceInvaders:
 
         # Ship
         self.ship = Ship()
+        self.follow_cursor(True)
         # Aliens
         self.aliens = Aliens()
         # Barriers
@@ -39,6 +40,14 @@ class SpaceInvaders:
         # Other
         self.start_game()
         self.screen.mainloop()
+
+    def follow_cursor(self, bool):
+        def onmove(self, fun, add=None):
+            def eventfun(event):
+                fun(self.cv.canvasx(event.x) / self.xscale, -
+                    self.cv.canvasy(event.y) / self.yscale)
+            self.cv.bind('<Motion>', eventfun, add)
+        onmove(self.screen, self.ship.follow_cursor if bool else None)
 
     def start_game(self):
         self.ship.bind_movement()
@@ -100,4 +109,4 @@ app = SpaceInvaders()
 
 # TODO: add wiggle animation
 # TODO: add sounds
-# TODO: fixe life display
+# TODO: fix life display
