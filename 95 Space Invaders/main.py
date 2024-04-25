@@ -3,7 +3,7 @@ from turtle import Screen
 from aliens import Aliens
 from ship import Ship
 from barriers import Barriers
-from scoreboard import Scoreboard
+from scoreboard import Scoreboard, Lives
 from datetime import datetime
 
 
@@ -31,6 +31,7 @@ class SpaceInvaders:
         # Ship
         self.ship = Ship()
         self.follow_cursor(True)
+        self.lives = Lives()
         # Aliens
         self.aliens = Aliens()
         # Barriers
@@ -55,10 +56,10 @@ class SpaceInvaders:
             self.ship.unbind_movement()
             self.aliens.clear_lasers()
             self.ship.laser.goto(GRAVEYARD)
-            if len(self.ship.lives) == 0:
+            if len(self.lives.lives) == 0:
                 self.game_over()
             else:
-                self.ship.lose_a_life()
+                self.lives.lose_life()
                 self.screen.ontimer(self.start_game, 1000)
 
     def reset_game(self):
@@ -102,6 +103,7 @@ class SpaceInvaders:
 
     def game_over(self):
         self.ship.unbind_movement()
+        self.follow_cursor(False)
         print('game over')
 
 
@@ -109,4 +111,4 @@ app = SpaceInvaders()
 
 # TODO: add wiggle animation
 # TODO: add sounds
-# TODO: fix life display
+# TODO: add UFO

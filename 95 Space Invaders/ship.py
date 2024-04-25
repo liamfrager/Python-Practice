@@ -12,9 +12,6 @@ class Ship(turtle.Turtle):
         self.setheading(90)
         self.shapesize(3, 3)
         self.laser = ShipLaser()
-        self.lives = []
-        for _ in range(3):
-            self.add_life()
         self.goto(x=0, y=SCREEN_BOT + 50)
 
     def reset(self):
@@ -68,14 +65,3 @@ class Ship(turtle.Turtle):
     def follow_cursor(self, x, y):
         if x > SCREEN_L + 10 and x < SCREEN_R - 60:
             self.goto(x, self.ycor())
-
-    def add_life(self):
-        self.goto(0, 0)
-        # self.goto(SCREEN_R - (i + 1) * 50, SCREEN_TOP - 50)
-        id = self.stamp()
-        self.lives.append(id)
-        print(self.lives)
-
-    def lose_a_life(self):
-        id = self.lives.pop()
-        self.clearstamp(id)

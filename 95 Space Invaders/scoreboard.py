@@ -23,3 +23,26 @@ class Scoreboard(turtle.Turtle):
             align='left',
             font=('Courier', 24, 'bold')
         )
+
+
+class Lives(turtle.Turtle):
+    def __init__(self) -> None:
+        super().__init__()
+        self.penup()
+        self.shape('ship')
+        self.color('white')
+        self.setheading(90)
+        self.shapesize(3, 3)
+        self.lives = []
+        for _ in range(3):
+            self.add_life()
+
+    def add_life(self):
+        self.goto(SCREEN_R - (len(self.lives) + 1) * 50, SCREEN_TOP - 50)
+        id = self.stamp()
+        self.lives.append(id)
+        self.goto(GRAVEYARD)
+
+    def lose_life(self):
+        id = self.lives.pop()
+        self.clearstamp(id)
