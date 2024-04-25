@@ -1,10 +1,11 @@
 from settings import *
 from turtle import Screen
-from aliens import Aliens
+from aliens import Aliens, UFO
 from ship import Ship
 from barriers import Barriers
 from scoreboard import Scoreboard, Lives
 from datetime import datetime
+import random
 
 
 class SpaceInvaders:
@@ -34,6 +35,7 @@ class SpaceInvaders:
         self.lives = Lives()
         # Aliens
         self.aliens = Aliens()
+        self.ufo = UFO()
         # Barriers
         self.barriers = Barriers()
         # Scoreboard
@@ -62,8 +64,9 @@ class SpaceInvaders:
                 self.lives.lose_life()
                 self.screen.ontimer(self.start_game, 1000)
 
-    def reset_game(self):
+    def new_wave(self):
         self.aliens.reset()
+        self.lives.add_life()
         self.start_game()
 
     def play_game(self):
@@ -74,6 +77,9 @@ class SpaceInvaders:
             if (datetime.now() - start_time).microseconds > self.aliens.move_speed:
                 self.aliens.move()
                 start_time = datetime.now()
+            if random.randint(0, UFO_CHANCE) == UFO_CHANCE:
+                self.ufo.pick_side()
+            self.ufo.fly()
             # Lasers
             self.aliens.shoot_lasers()
             lasers = self.aliens.lasers + [self.ship.laser]
@@ -90,12 +96,13 @@ class SpaceInvaders:
                     return True
             # Points for hit aliens
             points = self.aliens.check_for_laser(self.ship.laser)
+            points += self.ufo.check_for_laser(self.ship.laser)
             self.scoreboard.score_points(points)
             # Destroy barriers with alien collision
             self.barriers.check_for_aliens(self.aliens.all_aliens)
             # Continue?
             if len(self.aliens.all_aliens) == 0:
-                self.reset_game()
+                self.new_wave()
             elif self.aliens.all_aliens[-1].ycor() <= self.ship.ycor() + 20:
                 break
             self.screen.update()
@@ -111,4 +118,6 @@ app = SpaceInvaders()
 
 # TODO: add wiggle animation
 # TODO: add sounds
-# TODO: add UFO
+# TODO: add UFO shape
+# TODO: increase difficulty on later rounds (laser rate, speed)
+# TODO: game over screen

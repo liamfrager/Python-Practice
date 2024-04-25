@@ -38,10 +38,11 @@ class Lives(turtle.Turtle):
             self.add_life()
 
     def add_life(self):
-        self.goto(SCREEN_R - (len(self.lives) + 1) * 50, SCREEN_TOP - 50)
-        id = self.stamp()
-        self.lives.append(id)
-        self.goto(GRAVEYARD)
+        if len(self.lives) < 3:
+            self.goto(SCREEN_R - (len(self.lives) + 1) * 50, SCREEN_TOP - 50)
+            id = self.stamp()
+            self.lives.append(id)
+            self.goto(GRAVEYARD)
 
     def lose_life(self):
         id = self.lives.pop()

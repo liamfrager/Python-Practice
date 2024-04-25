@@ -72,6 +72,7 @@ class Aliens():
                 self.all_aliens.remove(alien)
                 self.move_speed -= 6000
                 return (4 - alien.species) * 10
+        return 0
 
     def shoot_lasers(self):
         for alien in self.all_aliens:
@@ -93,3 +94,51 @@ class Aliens():
         self.move_speed = ALIEN_MOVE_SPEED
         self.wave_number += 1
         self.create_aliens()
+
+
+class UFO(turtle.Turtle):
+    def __init__(self) -> None:
+        super().__init__()
+        self.penup()
+        self.shape('ufo')
+        self.color(UFO_COLOR)
+        self.setheading(90)
+        self.shapesize(3, 3)
+        self.goto(GRAVEYARD)
+        self.side = 0
+
+    def pick_side(self):
+        if self.pos() == GRAVEYARD:
+            sides = [SCREEN_L, SCREEN_R]
+            self.side = random.choice(sides)
+            self.goto(self.side, UFO_FLY_Y)
+
+    def fly(self):
+        if self.pos() != GRAVEYARD:
+            direction = 1 if self.side < 0 else -1
+            self.goto(self.xcor() + UFO_MOVE_DISTANCE * direction, UFO_FLY_Y)
+            if self.xcor() < SCREEN_L or self.xcor() > SCREEN_R:
+                self.goto(GRAVEYARD)
+
+    def check_for_laser(self, laser: ShipLaser):
+        if self.pos() != GRAVEYARD and laser.hits(self, 18):
+            laser.goto(GRAVEYARD)
+            self.explode()
+            return random.choice([50, 100, 150, 200])
+        return 0
+
+    def explode(self):
+        angle = 150
+        side = 6
+        pointies = 9
+        rotation = 360/pointies
+        self.pendown()
+        for _ in range(pointies):
+            self.forward(side)
+            self.right(angle)
+            self.forward(side)
+            self.left(angle)
+            self.right(rotation)
+        self.penup()
+        self.goto(GRAVEYARD)
+        self.screen.ontimer(self.clear, 300)
