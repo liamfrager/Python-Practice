@@ -23,9 +23,12 @@ class SpaceInvaders:
         self.screen.listen()
         # Shapes
         self.screen.register_shape('ship', SHIP_SHAPE)
-        self.screen.register_shape('alien1', ALIEN_1_SHAPE)
-        self.screen.register_shape('alien2', ALIEN_2_SHAPE)
-        self.screen.register_shape('alien3', ALIEN_3_SHAPE)
+        self.screen.register_shape('alien1a', ALIEN_1A_SHAPE)
+        self.screen.register_shape('alien1b', ALIEN_1B_SHAPE)
+        self.screen.register_shape('alien2a', ALIEN_2A_SHAPE)
+        self.screen.register_shape('alien2b', ALIEN_2B_SHAPE)
+        self.screen.register_shape('alien3a', ALIEN_3A_SHAPE)
+        self.screen.register_shape('alien3b', ALIEN_3B_SHAPE)
         self.screen.register_shape('ufo', UFO_SHAPE)
         self.screen.register_shape('alien_laser', ALIEN_LASER_SHAPE)
 

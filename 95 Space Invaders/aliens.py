@@ -11,8 +11,13 @@ class Alien(turtle.Turtle):
         self.species = species
         self.alien_color = ALIEN_1_COLOR if species == 1 else ALIEN_2_COLOR if species == 2 else ALIEN_3_COLOR if species == 3 else UFO_COLOR
         self.color(self.alien_color)
-        self.alien_shape = 'alien1' if species == 1 else 'alien2' if species == 2 else 'alien3' if species == 3 else 'ufo'
-        self.shape(self.alien_shape)
+        self.alien_shapes = [
+            '',
+            f'alien{self.species}a',
+            f'alien{self.species}b'
+        ]
+        self.shape_index = 1
+        self.shape(self.alien_shapes[self.shape_index])
         self.setheading(90)
         self.shapesize(3, 3)
 
@@ -32,6 +37,10 @@ class Alien(turtle.Turtle):
         self.goto(GRAVEYARD)
         self.screen.ontimer(self.clear, 300)
 
+    def wiggle(self):
+        self.shape_index *= -1
+        self.shape(self.alien_shapes[self.shape_index])
+
 
 class Aliens():
     def __init__(self) -> None:
@@ -41,6 +50,7 @@ class Aliens():
         self.create_aliens()
         self.move_speed = ALIEN_MOVE_SPEED
         self.laser_chance = 3000
+        self.on_edge = False
         self.lasers: list[AlienLaser] = []
 
     def create_aliens(self):
@@ -55,12 +65,15 @@ class Aliens():
                 self.all_aliens.append(alien)
 
     def move(self):
-        if self.check_for_edge():
+        if self.is_on_edge():
             self.move_direction *= -1
             for alien in self.all_aliens:
+                alien.wiggle()
                 alien.goto(alien.xcor(), alien.ycor() -
                            ALIEN_MOVE_DISTANCE * 3)
+            return
         for alien in self.all_aliens:
+            alien.wiggle()
             alien.goto(alien.xcor() + ALIEN_MOVE_DISTANCE *
                        self.move_direction, alien.ycor())
 
@@ -84,10 +97,14 @@ class Aliens():
             laser.goto(GRAVEYARD)
         self.lasers = []
 
-    def check_for_edge(self):
+    def is_on_edge(self):
+        if self.on_edge == True:
+            self.on_edge = False
+            return False
         for alien in self.all_aliens:
             if alien.xcor() > SCREEN_R - ALIEN_MOVE_DISTANCE * 4 or alien.xcor() < SCREEN_L + ALIEN_MOVE_DISTANCE * 3:
-                return True
+                self.on_edge = True
+                return self.on_edge
         return False
 
     def reset(self):
@@ -121,7 +138,7 @@ class UFO(turtle.Turtle):
                 self.goto(GRAVEYARD)
 
     def check_for_laser(self, laser: ShipLaser):
-        if self.pos() != GRAVEYARD and laser.hits(self, 18):
+        if self.pos() != GRAVEYARD and laser.hits(self, 24):
             laser.goto(GRAVEYARD)
             self.explode()
             return random.choice([50, 100, 150, 200])
