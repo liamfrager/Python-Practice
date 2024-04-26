@@ -49,7 +49,6 @@ class Aliens():
         self.all_aliens: list[Alien] = []
         self.move_direction = 1
         self.wave_number = 0
-        self.create_aliens()
         self.move_speed = ALIEN_MOVE_SPEED
         self.laser_chance = 3000
         self.on_edge = False
@@ -57,6 +56,7 @@ class Aliens():
         self.lasers: list[AlienLaser] = []
 
     def create_aliens(self):
+        self.clear_aliens()
         for i in range(5):
             species = 1 if i == 0 else 3 if i > 2 else 2
             for j in range(11):
@@ -66,6 +66,11 @@ class Aliens():
                 y = 0 if y < 0 else y
                 alien.goto(x + (j * ALIEN_X_GAP), y - (i * ALIEN_Y_GAP))
                 self.all_aliens.append(alien)
+
+    def clear_aliens(self):
+        for alien in self.all_aliens:
+            alien.goto(GRAVEYARD)
+        self.all_aliens = []
 
     def move(self):
         play_sound(f'alien_{self.move_sound}')
@@ -121,10 +126,11 @@ class Aliens():
                 return self.on_edge
         return False
 
-    def reset(self):
+    def new_wave(self):
         self.move_speed = ALIEN_MOVE_SPEED
         self.move_direction = 1
         self.wave_number += 1
+        self.clear_lasers()
         self.create_aliens()
 
 

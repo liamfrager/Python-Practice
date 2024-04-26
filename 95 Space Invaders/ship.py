@@ -42,12 +42,12 @@ class Ship(turtle.Turtle):
         play_sound('ship_explode')
 
     def move_left(self):
-        if self.xcor() > SCREEN_L + 10:
+        if self.xcor() > SCREEN_L + 30:
             self.goto(self.xcor() - SHIP_MOVE_DISTANCE, self.ycor())
             self.screen.update()
 
     def move_right(self):
-        if self.xcor() < SCREEN_R - 60:
+        if self.xcor() < SCREEN_R - 30:
             self.goto(self.xcor() + SHIP_MOVE_DISTANCE, self.ycor())
             self.screen.update()
 
@@ -66,5 +66,5 @@ class Ship(turtle.Turtle):
             self.screen.onkey(None, key)
 
     def follow_cursor(self, x, y):
-        if x > SCREEN_L + 10 and x < SCREEN_R - 60:
+        if x > SCREEN_L + 30 and x < SCREEN_R - 30:
             self.goto(x, self.ycor())

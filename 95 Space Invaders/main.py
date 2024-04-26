@@ -5,7 +5,6 @@ from ship import Ship
 from barriers import Barriers
 from scoreboard import Scoreboard, Lives
 from audio import play_ufo_sound
-from datetime import datetime
 import random
 
 
@@ -34,7 +33,6 @@ class SpaceInvaders:
         self.screen.register_shape('alien_laser', ALIEN_LASER_SHAPE)
         # Ship
         self.ship = Ship()
-        self.follow_cursor(True)
         self.lives = Lives()
         # Aliens
         self.aliens = Aliens()
@@ -44,7 +42,7 @@ class SpaceInvaders:
         # Scoreboard
         self.scoreboard = Scoreboard()
         # Other
-        self.start_game()
+        self.screen.onkey(self.new_game, 'Return')
         self.screen.mainloop()
 
     def follow_cursor(self, bool):
@@ -55,15 +53,27 @@ class SpaceInvaders:
             self.cv.bind('<Motion>', eventfun, add)
         onmove(self.screen, self.ship.follow_cursor if bool else None)
 
+    def new_game(self):
+        self.screen.onkey(None, 'enter')
+        self.follow_cursor(True)
+        self.aliens.__init__()
+        self.aliens.create_aliens()
+        self.barriers.reset_barriers()
+        self.barriers.create_barriers()
+        self.lives.reset_lives()
+        self.scoreboard.reset_score()
+        self.start_game()
+
     def start_game(self):
         self.ship.bind_movement()
-        if self.play_game():
-            self.ship.unbind_movement()
-            self.aliens.clear_lasers()
-            self.aliens.stop()
-            self.ufo.reset()
-            self.ship.laser.goto(GRAVEYARD)
-            self.screen.update()
+        is_shot = self.play_game()
+        self.ship.unbind_movement()
+        self.aliens.clear_lasers()
+        self.aliens.stop()
+        self.ufo.reset()
+        self.ship.laser.goto(GRAVEYARD)
+        self.screen.update()
+        if is_shot:
             if len(self.lives.lives) == 0:
                 self.game_over()
             else:
@@ -73,7 +83,7 @@ class SpaceInvaders:
             self.game_over()
 
     def new_wave(self):
-        self.aliens.reset()
+        self.aliens.new_wave()
         self.lives.add_life()
         self.start_game()
 
@@ -109,18 +119,18 @@ class SpaceInvaders:
             if len(self.aliens.all_aliens) == 0:
                 self.new_wave()
             elif self.aliens.all_aliens[-1].ycor() <= self.ship.ycor() + 20:
+                self.ship.explode()
                 return False
             self.screen.update()
 
     def game_over(self):
-        self.ship.unbind_movement()
         self.follow_cursor(False)
-        print('game over')
+        self.scoreboard.game_over()
+        self.aliens.clear_aliens()
+        self.screen.update()
+        self.screen.onkey(self.new_game, 'enter')
 
 
 app = SpaceInvaders()
 
-# TODO: add sounds
 # TODO: increase difficulty on later rounds (laser rate, speed)
-# TODO: game over screen
-# TODO: fix barriers

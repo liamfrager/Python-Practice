@@ -7,9 +7,8 @@ class Scoreboard(turtle.Turtle):
         super().__init__()
         self.penup()
         self.hideturtle()
-        self.color('white')
         self.score = 0
-        self.update_score()
+        self.welcome()
 
     def score_points(self, points):
         self.score += points if points != None else 0
@@ -24,6 +23,42 @@ class Scoreboard(turtle.Turtle):
             font=('Courier', 24, 'bold')
         )
 
+    def reset_score(self):
+        self.score = 0
+        self.update_score()
+
+    def welcome(self):
+        self.goto(0, 10)
+        self.color(LOGO_COLOR)
+        self.write(
+            LOGO,
+            align='center',
+            font=('Courier', 20, 'bold')
+        )
+        self.goto(0, -10)
+        self.color('white')
+        self.write(
+            'Press ENTER to play',
+            align='center',
+            font=('Courier', 18, 'bold')
+        )
+
+    def game_over(self):
+        self.goto(0, 10)
+        self.color('firebrick')
+        self.write(
+            'GAME OVER',
+            align='center',
+            font=('Courier', 40, 'bold')
+        )
+        self.goto(0, -10)
+        self.color('white')
+        self.write(
+            'Press ENTER to play again',
+            align='center',
+            font=('Courier', 18, 'bold')
+        )
+
 
 class Lives(turtle.Turtle):
     def __init__(self) -> None:
@@ -34,8 +69,6 @@ class Lives(turtle.Turtle):
         self.setheading(90)
         self.shapesize(3, 3)
         self.lives = []
-        for _ in range(2):
-            self.add_life()
 
     def add_life(self):
         if len(self.lives) < 3:
@@ -45,5 +78,15 @@ class Lives(turtle.Turtle):
             self.goto(GRAVEYARD)
 
     def lose_life(self):
-        id = self.lives.pop()
-        self.clearstamp(id)
+        try:
+            id = self.lives.pop()
+        except IndexError:
+            return
+        else:
+            self.clearstamp(id)
+
+    def reset_lives(self):
+        for _ in range(3):
+            self.lose_life()
+        for _ in range(2):
+            self.add_life()
