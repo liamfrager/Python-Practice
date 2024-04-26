@@ -1,6 +1,7 @@
 from settings import *
 import turtle
 from laser import ShipLaser
+from audio import play_sound
 
 
 class Ship(turtle.Turtle):
@@ -21,6 +22,7 @@ class Ship(turtle.Turtle):
     def fire(self):
         if self.laser.pos() == GRAVEYARD:
             self.laser.goto(self.pos())
+            play_sound('shoot_laser')
 
     def explode(self):
         angle = 150
@@ -37,6 +39,7 @@ class Ship(turtle.Turtle):
         self.penup()
         self.hideturtle()
         self.screen.update()
+        play_sound('ship_explode')
 
     def move_left(self):
         if self.xcor() > SCREEN_L + 10:

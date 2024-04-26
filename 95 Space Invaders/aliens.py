@@ -2,6 +2,7 @@ from settings import *
 import turtle
 import random
 from laser import AlienLaser, ShipLaser
+from audio import play_sound, play_ufo_sound
 
 
 class Alien(turtle.Turtle):
@@ -35,6 +36,7 @@ class Alien(turtle.Turtle):
             self.right(rotation)
         self.penup()
         self.goto(GRAVEYARD)
+        play_sound('alien_explode')
         self.screen.ontimer(self.clear, 300)
 
     def wiggle(self):
@@ -51,6 +53,7 @@ class Aliens():
         self.move_speed = ALIEN_MOVE_SPEED
         self.laser_chance = 3000
         self.on_edge = False
+        self.move_sound = 1
         self.lasers: list[AlienLaser] = []
 
     def create_aliens(self):
@@ -65,6 +68,10 @@ class Aliens():
                 self.all_aliens.append(alien)
 
     def move(self):
+        play_sound(f'alien_{self.move_sound}')
+        self.move_sound = self.move_sound + 1 if self.move_sound < 4 else 1
+        if self.moving:
+            self.all_aliens[0].screen.ontimer(self.move, self.move_speed)
         if self.is_on_edge():
             self.move_direction *= -1
             for alien in self.all_aliens:
@@ -77,13 +84,20 @@ class Aliens():
             alien.goto(alien.xcor() + ALIEN_MOVE_DISTANCE *
                        self.move_direction, alien.ycor())
 
+    def go(self):
+        self.moving = True
+        self.move()
+
+    def stop(self):
+        self.moving = False
+
     def check_for_laser(self, laser: ShipLaser):
         for alien in self.all_aliens:
             if laser.hits(alien, 18):
                 laser.goto(GRAVEYARD)
                 alien.explode()
                 self.all_aliens.remove(alien)
-                self.move_speed -= 6000
+                self.move_speed -= 6
                 return (4 - alien.species) * 10
         return 0
 
@@ -109,6 +123,7 @@ class Aliens():
 
     def reset(self):
         self.move_speed = ALIEN_MOVE_SPEED
+        self.move_direction = 1
         self.wave_number += 1
         self.create_aliens()
 
@@ -126,6 +141,7 @@ class UFO(turtle.Turtle):
 
     def pick_side(self):
         if self.pos() == GRAVEYARD:
+            play_ufo_sound()
             sides = [SCREEN_L, SCREEN_R]
             self.side = random.choice(sides)
             self.goto(self.side, UFO_FLY_Y)
@@ -135,6 +151,7 @@ class UFO(turtle.Turtle):
             direction = 1 if self.side < 0 else -1
             self.goto(self.xcor() + UFO_MOVE_DISTANCE * direction, UFO_FLY_Y)
             if self.xcor() < SCREEN_L or self.xcor() > SCREEN_R:
+                play_ufo_sound(False)
                 self.goto(GRAVEYARD)
 
     def check_for_laser(self, laser: ShipLaser):
@@ -157,5 +174,10 @@ class UFO(turtle.Turtle):
             self.left(angle)
             self.right(rotation)
         self.penup()
-        self.goto(GRAVEYARD)
         self.screen.ontimer(self.clear, 300)
+        play_sound('alien_explode')
+        self.reset()
+
+    def reset(self):
+        self.goto(GRAVEYARD)
+        play_ufo_sound(False)

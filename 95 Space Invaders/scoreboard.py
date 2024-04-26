@@ -34,7 +34,7 @@ class Lives(turtle.Turtle):
         self.setheading(90)
         self.shapesize(3, 3)
         self.lives = []
-        for _ in range(3):
+        for _ in range(2):
             self.add_life()
 
     def add_life(self):

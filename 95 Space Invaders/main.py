@@ -4,6 +4,7 @@ from aliens import Aliens, UFO
 from ship import Ship
 from barriers import Barriers
 from scoreboard import Scoreboard, Lives
+from audio import play_ufo_sound
 from datetime import datetime
 import random
 
@@ -31,7 +32,6 @@ class SpaceInvaders:
         self.screen.register_shape('alien3b', ALIEN_3B_SHAPE)
         self.screen.register_shape('ufo', UFO_SHAPE)
         self.screen.register_shape('alien_laser', ALIEN_LASER_SHAPE)
-
         # Ship
         self.ship = Ship()
         self.follow_cursor(True)
@@ -60,12 +60,17 @@ class SpaceInvaders:
         if self.play_game():
             self.ship.unbind_movement()
             self.aliens.clear_lasers()
+            self.aliens.stop()
+            self.ufo.reset()
             self.ship.laser.goto(GRAVEYARD)
+            self.screen.update()
             if len(self.lives.lives) == 0:
                 self.game_over()
             else:
                 self.lives.lose_life()
-                self.screen.ontimer(self.start_game, 1000)
+                self.screen.ontimer(self.start_game, 2000)
+        else:
+            self.game_over()
 
     def new_wave(self):
         self.aliens.reset()
@@ -73,16 +78,9 @@ class SpaceInvaders:
         self.start_game()
 
     def play_game(self):
-        start_time = datetime.now()
+        self.aliens.go()
         self.ship.reset()
         while True:
-            # Move aliens
-            if (datetime.now() - start_time).microseconds > self.aliens.move_speed:
-                self.aliens.move()
-                start_time = datetime.now()
-            if random.randint(0, UFO_CHANCE) == UFO_CHANCE:
-                self.ufo.pick_side()
-            self.ufo.fly()
             # Lasers
             self.aliens.shoot_lasers()
             lasers = self.aliens.lasers + [self.ship.laser]
@@ -97,6 +95,10 @@ class SpaceInvaders:
                     self.aliens.lasers.remove(laser)
                     self.ship.explode()
                     return True
+            # Move aliens
+            if random.randint(0, UFO_CHANCE) == UFO_CHANCE:
+                self.ufo.pick_side()
+            self.ufo.fly()
             # Points for hit aliens
             points = self.aliens.check_for_laser(self.ship.laser)
             points += self.ufo.check_for_laser(self.ship.laser)
@@ -107,9 +109,8 @@ class SpaceInvaders:
             if len(self.aliens.all_aliens) == 0:
                 self.new_wave()
             elif self.aliens.all_aliens[-1].ycor() <= self.ship.ycor() + 20:
-                break
+                return False
             self.screen.update()
-        self.game_over()
 
     def game_over(self):
         self.ship.unbind_movement()
@@ -119,8 +120,7 @@ class SpaceInvaders:
 
 app = SpaceInvaders()
 
-# TODO: add wiggle animation
 # TODO: add sounds
-# TODO: add UFO shape
 # TODO: increase difficulty on later rounds (laser rate, speed)
 # TODO: game over screen
+# TODO: fix barriers
