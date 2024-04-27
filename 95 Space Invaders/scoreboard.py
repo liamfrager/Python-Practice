@@ -2,6 +2,35 @@ from settings import *
 import turtle
 
 
+class HighScore(turtle.Turtle):
+    def __init__(self) -> None:
+        super().__init__()
+        self.penup()
+        self.hideturtle()
+        self.color('white')
+
+    def get_highscore(self):
+        try:
+            with open('highscore.txt', 'r') as f:
+                return int(f.read())
+        except:
+            return 0
+
+    def write_highscore(self, new_highscore):
+        with open('highscore.txt', 'w') as f:
+            f.write(str(new_highscore))
+        self.update_highscore()
+
+    def update_highscore(self):
+        self.clear()
+        self.goto(0 - 100, SCREEN_TOP - 50)
+        self.write(
+            f'Hi-Score: {self.get_highscore()}',
+            align='left',
+            font=('Courier', 24, 'bold')
+        )
+
+
 class Scoreboard(turtle.Turtle):
     def __init__(self) -> None:
         super().__init__()
@@ -9,6 +38,7 @@ class Scoreboard(turtle.Turtle):
         self.hideturtle()
         self.score = 0
         self.welcome()
+        self.highscore = HighScore()
 
     def score_points(self, points):
         self.score += points if points != None else 0
@@ -26,6 +56,7 @@ class Scoreboard(turtle.Turtle):
     def reset_score(self):
         self.score = 0
         self.update_score()
+        self.highscore.update_highscore()
 
     def welcome(self):
         self.goto(0, 10)
@@ -44,6 +75,8 @@ class Scoreboard(turtle.Turtle):
         )
 
     def game_over(self):
+        if self.score > self.highscore.get_highscore():
+            self.highscore.write_highscore(self.score)
         self.goto(0, 10)
         self.color('firebrick')
         self.write(

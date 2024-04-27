@@ -15,7 +15,7 @@ class ShipLaser(turtle.Turtle):
         if self.ycor() > SCREEN_TOP:
             self.goto(GRAVEYARD)
         if self.pos() != GRAVEYARD:
-            self.goto(self.xcor(), self.ycor() + LASER_MOVE_DISTANCE)
+            self.goto(self.xcor(), self.ycor() + SHIP_LASER_MOVE_DISTANCE)
 
     def hits(self, object, hit_box):
         return abs(self.xcor() - object.xcor()) < hit_box and abs(self.ycor() - object.ycor()) < hit_box
@@ -34,7 +34,7 @@ class AlienLaser(turtle.Turtle):
         if self.ycor() < SCREEN_BOT:
             self.goto(GRAVEYARD)
         if self.pos() != GRAVEYARD:
-            self.goto(self.xcor(), self.ycor() - LASER_MOVE_DISTANCE)
+            self.goto(self.xcor(), self.ycor() - ALIEN_LASER_MOVE_DISTANCE)
 
     def hits(self, object: turtle.Turtle, hit_box):
         return abs(self.xcor() - object.xcor()) < hit_box and abs(self.ycor() - object.ycor()) < hit_box

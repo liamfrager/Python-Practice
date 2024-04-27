@@ -45,12 +45,13 @@ class Alien(turtle.Turtle):
 
 
 class Aliens():
-    def __init__(self) -> None:
+    def __init__(self, screen: turtle._Screen) -> None:
+        self.screen = screen
         self.all_aliens: list[Alien] = []
         self.move_direction = 1
+        self.moving = False
         self.wave_number = 0
         self.move_speed = ALIEN_MOVE_SPEED
-        self.laser_chance = 3000
         self.on_edge = False
         self.move_sound = 1
         self.lasers: list[AlienLaser] = []
@@ -63,7 +64,7 @@ class Aliens():
                 alien = Alien(species)
                 x = SCREEN_L + ALIEN_MOVE_DISTANCE * 3
                 y = 250 - (self.wave_number * 100)
-                y = 0 if y < 0 else y
+                y = -50 if y < -50 else y
                 alien.goto(x + (j * ALIEN_X_GAP), y - (i * ALIEN_Y_GAP))
                 self.all_aliens.append(alien)
 
@@ -73,25 +74,28 @@ class Aliens():
         self.all_aliens = []
 
     def move(self):
-        play_sound(f'alien_{self.move_sound}')
-        self.move_sound = self.move_sound + 1 if self.move_sound < 4 else 1
+        if self.move_speed > 0:
+            self.screen.ontimer(self.move, self.move_speed)
+        else:
+            self.screen.ontimer(self.move, 0)
         if self.moving:
-            self.all_aliens[0].screen.ontimer(self.move, self.move_speed)
-        if self.is_on_edge():
-            self.move_direction *= -1
+            play_sound(f'alien_{self.move_sound}')
+            self.move_sound = self.move_sound + 1 if self.move_sound < 4 else 1
+            if self.is_on_edge():
+                self.move_direction *= -1
+                self.move_speed - 25
+                for alien in self.all_aliens:
+                    alien.wiggle()
+                    alien.goto(alien.xcor(), alien.ycor() -
+                               ALIEN_MOVE_DISTANCE * 3)
+                return
             for alien in self.all_aliens:
                 alien.wiggle()
-                alien.goto(alien.xcor(), alien.ycor() -
-                           ALIEN_MOVE_DISTANCE * 3)
-            return
-        for alien in self.all_aliens:
-            alien.wiggle()
-            alien.goto(alien.xcor() + ALIEN_MOVE_DISTANCE *
-                       self.move_direction, alien.ycor())
+                alien.goto(alien.xcor() + ALIEN_MOVE_DISTANCE *
+                           self.move_direction, alien.ycor())
 
     def go(self):
         self.moving = True
-        self.move()
 
     def stop(self):
         self.moving = False
@@ -102,13 +106,15 @@ class Aliens():
                 laser.goto(GRAVEYARD)
                 alien.explode()
                 self.all_aliens.remove(alien)
-                self.move_speed -= 6
+                self.move_speed -= 5
                 return (4 - alien.species) * 10
         return 0
 
     def shoot_lasers(self):
         for alien in self.all_aliens:
-            if random.randint(0, self.laser_chance) == self.laser_chance:
+            chance = ALIEN_LASER_CHANCE - (550 * self.wave_number)
+            chance = 550 if chance < 550 else chance
+            if random.randint(0, chance) == chance:
                 self.lasers.append(AlienLaser(alien))
 
     def clear_lasers(self):
@@ -127,9 +133,11 @@ class Aliens():
         return False
 
     def new_wave(self):
-        self.move_speed = ALIEN_MOVE_SPEED
+        self.stop()
         self.move_direction = 1
         self.wave_number += 1
+        self.move_speed = ALIEN_MOVE_SPEED - (55 * self.wave_number)
+        self.move_speed = 330 if self.move_speed < 330 else self.move_speed
         self.clear_lasers()
         self.create_aliens()
 

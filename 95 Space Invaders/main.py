@@ -4,7 +4,6 @@ from aliens import Aliens, UFO
 from ship import Ship
 from barriers import Barriers
 from scoreboard import Scoreboard, Lives
-from audio import play_ufo_sound
 import random
 
 
@@ -35,7 +34,8 @@ class SpaceInvaders:
         self.ship = Ship()
         self.lives = Lives()
         # Aliens
-        self.aliens = Aliens()
+        self.aliens = Aliens(self.screen)
+        self.aliens.move()
         self.ufo = UFO()
         # Barriers
         self.barriers = Barriers()
@@ -54,9 +54,9 @@ class SpaceInvaders:
         onmove(self.screen, self.ship.follow_cursor if bool else None)
 
     def new_game(self):
-        self.screen.onkey(None, 'enter')
+        self.screen.onkey(None, 'Return')
         self.follow_cursor(True)
-        self.aliens.__init__()
+        self.aliens.__init__(self.screen)
         self.aliens.create_aliens()
         self.barriers.reset_barriers()
         self.barriers.create_barriers()
@@ -79,6 +79,8 @@ class SpaceInvaders:
             else:
                 self.lives.lose_life()
                 self.screen.ontimer(self.start_game, 2000)
+        elif len(self.aliens.all_aliens) == 0:
+            self.screen.ontimer(self.new_wave, 2000)
         else:
             self.game_over()
 
@@ -117,7 +119,7 @@ class SpaceInvaders:
             self.barriers.check_for_aliens(self.aliens.all_aliens)
             # Continue?
             if len(self.aliens.all_aliens) == 0:
-                self.new_wave()
+                return False
             elif self.aliens.all_aliens[-1].ycor() <= self.ship.ycor() + 20:
                 self.ship.explode()
                 return False
@@ -128,9 +130,7 @@ class SpaceInvaders:
         self.scoreboard.game_over()
         self.aliens.clear_aliens()
         self.screen.update()
-        self.screen.onkey(self.new_game, 'enter')
+        self.screen.onkey(self.new_game, 'Return')
 
 
 app = SpaceInvaders()
-
-# TODO: increase difficulty on later rounds (laser rate, speed)
