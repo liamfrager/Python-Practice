@@ -1,0 +1,21 @@
+<div id="{{ house }}" class="house-card">
+  {% with house = houses[house] %}
+    <div>
+      <img src="{{ house.img }}" alt="{{ house.name }} crest">
+      <h2>{{ house.name }}</h2>
+      {% for quality in house.qualities %}
+        <span>{{ quality }}</span>
+      {% endfor %}
+    </div>
+  {% endwith %}
+</div>
+<style>
+  #{{ house }} {
+    background-color: {{ houses[house].colors[1] }};
+    color: {{ houses[house].colors[1] }};
+    div {
+      background-color: {{ houses[house].colors[0] }};
+      padding: 1rem;
+    }
+  }
+</style>

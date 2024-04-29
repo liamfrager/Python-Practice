@@ -1,0 +1,21 @@
+.house-display {
+    display: grid;
+    grid-template: 1fr 1fr / 1fr 1fr;
+    gap: 2rem;
+    margin-inline: auto;
+    a {
+        text-decoration: none;
+    }
+    .house-card {
+        display: flex;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+
+        &:hover {
+            transform: rotateY(180deg);
+            transform-style: preserve-3d;
+            transition: transform .8s;
+        }
+    }
+}
