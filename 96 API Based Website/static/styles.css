@@ -1,21 +1,76 @@
+* {
+    box-sizing: border-box;
+}
+
 .house-display {
     display: grid;
-    grid-template: 1fr 1fr / 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
-    margin-inline: auto;
+    justify-items: center;
     a {
         text-decoration: none;
     }
-    .house-card {
-        display: flex;
-        justify-content: center;
-        padding: 2rem;
-        text-align: center;
+}
+/* The flip card container - set the width and height to whatever you want. We have added the border property to demonstrate that the flip itself goes out of the box on hover (remove perspective if you don't want the 3D effect */
+.flip-card {
+    background-color: transparent;
+    width: 300px;
+    height: 320px;
+    perspective: 1000px; /* Remove this if you don't want the 3D effect */
+}
 
-        &:hover {
-            transform: rotateY(180deg);
-            transform-style: preserve-3d;
-            transition: transform .8s;
-        }
-    }
+/* This container is needed to position the front and back side */
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+    background-color: var(--primary-color);
+    border: 1rem solid var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+/* Do an horizontal flip when you move the mouse over the flip box container */
+.flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+/* Position the front and back side */
+.flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    -webkit-backface-visibility: hidden; /* Safari */
+    backface-visibility: hidden;
+}
+
+/* Style the back side */
+.flip-card-back {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    transform: rotateY(180deg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.gryffindor {
+    --primary-color: firebrick;
+    --secondary-color: gold;
+}
+.ravenclaw {
+    --primary-color: deepskyblue;
+    --secondary-color: sienna;
+}
+.hufflepuff {
+    --primary-color: gold;
+    --secondary-color: black;
+}
+.slytherin {
+    --primary-color: forestgreen;
+    --secondary-color: silver;
 }
