@@ -1,12 +1,17 @@
 {% extends 'base.html' %}
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+{% endblock %}
 {% block content %}
-  <h1>Hello World!</h1>
-  <img src="https://i.pinimg.com/originals/02/65/8a/02658a55641d0b0322784857389bd0fb.png" alt="hogwarts crest">
-  <div class="house-display">
-    {% for house in houses %}
-      <a href="{{ url_for('house', house=house) }}">
-        {% include 'card.html' %}
-      </a>
-    {% endfor %}
-  </div>
+  <body>
+    <h1>Hello World!</h1>
+    <img src="https://i.pinimg.com/originals/02/65/8a/02658a55641d0b0322784857389bd0fb.png" alt="hogwarts crest">
+    <div class="house-display">
+      {% for house in houses %}
+        <a href="{{ url_for('house', house=house) }}">
+          {% include 'card.html' %}
+        </a>
+      {% endfor %}
+    </div>
+  </body>
 {% endblock %}

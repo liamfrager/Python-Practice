@@ -1,0 +1,30 @@
+.content {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+}
+.heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: .2rem solid var(--secondary-color);
+    position: sticky;
+    top: 0;
+    padding-top: 1rem;
+    margin-bottom: 1rem;
+    background-color: var(--primary-color);
+    img {
+        max-width: 350px;
+    }
+}
+.character-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 2rem;
+    a {
+        text-decoration: none;
+        background-color: var(--secondary-color);
+        color: var(--primary-color);
+        text-align: center;
+        border-radius: .5rem;
+    }
+}

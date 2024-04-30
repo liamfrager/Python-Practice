@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='character.css') }}">
+{% endblock %}
+{% block content %}
+  <body class="content {{ character.house.lower() }}">
+    <h1>{{ character.name }}</h1>
+    {% if character.image %}
+      <img src="{{ character.image }}" alt="{{ character.name }}">
+    {% endif %}
+    {% if character.alternate_names %}
+      <h3>a.k.a.</h3>
+      <ul>
+        {% for name in character.alternate_names %}
+          <li>{{ name }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if character.wand %}
+      <p>wand</p>
+      <ul>
+        <li>Wood: {{ character.wand['wood'] }}</li>
+        <li>Core: {{ character.wand['core'] }}</li>
+        <li>Length: {{ character.wand['length'] }} inches</li>
+      </ul>
+    {% endif %}
+    {% if character.patronus %}
+      <p>Patronus: {{ character.patronus }}</p>
+    {% endif %}
+    {% if character.eyeColour %}
+      <p>Eyes: {{ character.eyeColour }}</p>
+    {% endif %}
+    {% if character.hairColour %}
+      <p>Hair: {{ character.hairColour }}</p>
+    {% endif %}
+    {% if character.ancestry %}
+      <p>{{ character.ancestry }}</p>
+    {% endif %}
+  </body>
+{% endblock %}

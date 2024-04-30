@@ -1,4 +1,19 @@
 {% extends 'base.html' %}
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='house.css') }}">
+{% endblock %}
 {% block content %}
-  <h1>{{ house.title() }}</h1>
+  <body class="content {{ house.name.lower() }}">
+    <div class="heading">
+      <img src="{{ house.img }}" alt="{{ house.name }} crest">
+      <h1 id="house-name">{{ house.name }}</h1>
+    </div>
+    <div class="character-display">
+      {% for character in characters %}
+        <a href="{{ url_for('character', id=character.id) }}">
+          <h3>{{ character.name }}</h3>
+        </a>
+      {% endfor %}
+    </div>
+  </body>
 {% endblock %}
