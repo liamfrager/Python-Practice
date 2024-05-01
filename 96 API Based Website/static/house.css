@@ -18,7 +18,7 @@
 }
 .character-display {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 2rem;
     a {
         text-decoration: none;
@@ -26,5 +26,8 @@
         color: var(--primary-color);
         text-align: center;
         border-radius: .5rem;
+    }
+    .character:hover {
+        scale: 1.1
     }
 }

@@ -23,6 +23,11 @@ body {
 }
 
 footer {
+    position: sticky;
+    bottom: 0;
     display: flex;
     justify-content: center;
+    a:hover {
+        scale: 1.1;
+    }
 }
