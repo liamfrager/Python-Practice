@@ -21,3 +21,8 @@ body {
     --primary-color: forestgreen;
     --secondary-color: silver;
 }
+
+footer {
+    display: flex;
+    justify-content: center;
+}
