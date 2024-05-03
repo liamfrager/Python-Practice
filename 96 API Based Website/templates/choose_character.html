@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block styles %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='house.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='choose_character.css') }}">
 {% endblock %}
 {% block content %}
   <body class="content {{ house.name.lower() }}">
@@ -10,7 +10,7 @@
     </div>
     <div class="character-display">
       {% for character in characters %}
-        <a class="character" href="{{ url_for('character', id=character.id) }}">
+        <a class="character" href="{{ url_for('select', id=character.id) }}">
           <h3>{{ character.name }}</h3>
         </a>
       {% endfor %}

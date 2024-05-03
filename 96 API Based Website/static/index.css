@@ -1,5 +1,38 @@
-h1 {
+h1, h2 {
     text-align: center;
+}
+
+.center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.choose-char-btn {
+    background-color: goldenrod;
+    color: white;
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-size: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 5px;
+}
+a.choose-char-btn:hover {
+    scale: 1.1;
+}
+
+.vs {
+    font-size: 1.5rem;
+    padding: 2rem;
+    font-weight: bold;
+}
+
+.char-select-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .house-display {
@@ -7,6 +40,9 @@ h1 {
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
     justify-items: center;
+    padding-block: 4rem;
+    border: 1rem solid black;
+    background-image: conic-gradient(from 30deg, deepskyblue, deepskyblue, forestgreen, forestgreen, forestgreen, gold, gold, gold, firebrick, firebrick, firebrick, deepskyblue);
     a {
         text-decoration: none;
     }

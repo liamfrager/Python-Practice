@@ -3,14 +3,29 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 {% endblock %}
 {% block content %}
-  <body>
-    <h1>Welcome to Hogwarts!</h1>
-    <div class="house-display">
-      {% for house in houses %}
-        <a href="{{ url_for('house', house=house) }}">
-          {% include 'card.html' %}
-        </a>
-      {% endfor %}
-    </div>
+  <body class="center">
+    <h1>Welcome to The Battle of Hogwarts!</h1>
+    <h2>Who would win in a fight?</h2>
+
+    {% with char_1 = request.cookies.get('char_1_name') %}
+      {% with char_2 = request.cookies.get('char_2_name') %}
+        <div class="char-select-display">
+          {% if char_1 and char_2 %}
+            <div class="{{ request.cookies.get('char_1_house') }} choose-char-btn">{{ char_1 }}</div>
+            <span class="vs">vs.</span>
+            <div class="{{ request.cookies.get('char_2_house') }} choose-char-btn">{{ char_2 }}</div>
+          {% else %}
+            <a class="{{ request.cookies.get('char_1_house') if request.cookies.get('char_1_house') else 'no-house' }} choose-char-btn" href="{{ url_for('choose_house', character=1) }}">{{ char_1 if char_1 else 'Choose character'}}</a>
+            <span class="vs">vs.</span>
+            <a class="{{ request.cookies.get('char_2_house') if request.cookies.get('char_2_house') else 'no-house' }} choose-char-btn" href="{{ url_for('choose_house', character=2) }}">{{ char_2 if char_2 else 'Choose character'}}</a>
+          {% endif %}
+        </div>
+        {% if char_1 and char_2 %}
+          <h2>Winner is {{ char_1 if char_1|length > char_2|length else char_2 }}</h2>
+          <a class="no-house choose-char-btn" href="{{ url_for('clear') }}">Try another match up</a>
+        {% endif %}
+      {% endwith %}
+    {% endwith %}
+
   </body>
 {% endblock %}
