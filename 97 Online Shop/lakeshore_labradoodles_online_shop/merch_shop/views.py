@@ -2,11 +2,13 @@ import json
 from django.http import HttpRequest
 from django.shortcuts import render, redirect
 from .models import ShopProduct
+import requests as req
 
 
 # Create your views here.
 def home(request: HttpRequest):
     products = ShopProduct.objects.all()
+    # req.get()
     return render(request, 'index.html', {'products': products})
 
 

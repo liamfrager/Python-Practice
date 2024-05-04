@@ -3,17 +3,18 @@
   <h1>Hello world!</h1>
   <div class="row row-cols-4 row-cols-md-2 g-4">
     {% for product in products %}
-    <div class="col">
-      <a href="{% url 'product' product_id=product.pk %}">
-        <div class="card" style="width: 18rem;">
-        <img src="{{ product.img }}" class="card-img-top" alt="...">
-        <div class="card-body">
-          <span>{{ product.name }}</span>
-          <span>${{ product.price }}</span>
-          <p class="card-text">{{ product.description }}
+      <div class="col">
+        <a href="{% url 'product' product_id=product.pk %}">
+          <div class="card" style="width: 18rem;">
+            <img src="{{ product.img }}" class="card-img-top" alt="...">
+            <div class="card-body">
+              <span>{{ product.name }}</span>
+              <span>${{ product.price }}</span>
+              <p class="card-text">{{ product.description }}</p>
+            </div>
+          </div>
+        </a>
       </div>
-      </a>
-    </div>
     {% endfor %}
   </div>
 {% endblock %}
