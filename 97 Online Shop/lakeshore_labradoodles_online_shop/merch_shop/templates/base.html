@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lakeshore Labradoodles Store{% endblock %}</title>
+  {% load bootstrap5 %}
+  {% bootstrap_css %}
+  {% bootstrap_javascript %}
+</head>
+<body class="d-flex flex-column h-100">
+    
+<header>{% include 'header.html' %}</header>
+
+<main class="flex-shrink-0">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer mt-auto py-3 bg-light">
+  {% include 'footer.html' %}
+</footer>
+</body>
+</html>
