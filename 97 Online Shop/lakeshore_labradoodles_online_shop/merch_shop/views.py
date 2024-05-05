@@ -53,14 +53,15 @@ def product(request: HttpRequest, product_id):
             )
         finally:
             variants.append(var)
-
+    # Get colors
     colors = set([variant.color_code for variant in variants])
     colors = [{
         'code': color,
         'name': ProductVariant.objects.filter(color_code=color)[0].color_name,
         'files': next(variant for variant in product['sync_variants'] if variant['color'] == ProductVariant.objects.filter(color_code=color)[0].color_name)['files'],
+        'sizes': json.dumps({variant['size']: variant['id'] for variant in product['sync_variants'] if variant['color'] == ProductVariant.objects.filter(color_code=color)[0].color_name})
     } for color in colors]
-    # TODO: make new model to store color_code - color_name relationship. use this to pass over both in colors... or just expand above code?
+    # Get sizes
     sizes = set([variant.size for variant in variants])
     sizes = [size for size in ['S', 'M', 'L',
                                'XL', '2XL', '3XL', '4XL'] if size in sizes]
@@ -69,16 +70,23 @@ def product(request: HttpRequest, product_id):
 
 def cart(request: HttpRequest):
     cart = request.session.get('cart')
-    for product_id in cart:
-        product = ProductVariant.objects.get(pk=product_id)
-        cart[product_id] = {
-            'name': product.name,
-            'price': product.price,
-            'total_price': product.price * int(cart[product_id]['amount']),
-            'img': product.img,
-            'amount': cart[product_id]['amount'],
-        }
-    order_total = sum([cart[id]['total_price'] for id in cart])
+    if cart != None:
+        for variant_id in cart:
+            res = req.get(
+                url=PRINTFUL_API_ENDPOINT + 'sync/variant/' + variant_id,
+                headers=PRINTFUL_API_HEADERS,
+            )
+            product = res.json()['result']['sync_variant']
+            cart[variant_id] = {
+                'name': product['name'],
+                'price': float(product['retail_price']),
+                'total_price': float(product['retail_price']) * int(cart[variant_id]['quantity']),
+                'img': product['files'][0]['thumbnail_url'],
+                'quantity': cart[variant_id]['quantity'],
+            }
+        order_total = sum([cart[id]['total_price'] for id in cart])
+    else:
+        order_total = 0
     return render(request, 'cart.html', {'cart': cart, 'order_total': order_total})
 
 
@@ -87,8 +95,18 @@ def add_to_cart(request: HttpRequest):
         cart = request.session.get('cart')
         if cart == None:
             cart = {}
-        cart[request.POST['product_id']] = {
-            'quantity': request.POST['quantity']}
+        cart[request.POST['variant_id']] = {
+            'quantity': 1}
         request.session['cart'] = cart
         request.session.modified = True
         return redirect('cart')
+
+
+def remove_from_cart(request: HttpRequest, variant_id):
+    cart = request.session.get('cart')
+    if cart == None:
+        cart = {}
+    cart.pop(str(variant_id))
+    request.session['cart'] = cart
+    request.session.modified = True
+    return redirect('cart')

@@ -3,60 +3,62 @@
   <div class="container">
     <h2>{{ product.name }}</h2>
     <div class="row">
-      {% for color in colors %}
-        {% if forloop.first %}
-          <div id="imageCarousel{{ forloop.counter }}" class="carousel carousel-dark slide col-8" data-interval="false" color="{{ color.name }}">
-            <div class="carousel-inner">
-              {% for file in color.files %}
-                <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                  <img src="{{ file.preview_url }}" class="d-block w-100" alt="product image">
-                </div>
-              {% endfor %}
+      <div class="col-8">
+        {% for color in colors %}
+          {% if forloop.first %}
+            <div id="imageCarousel{{ forloop.counter }}" class="carousel carousel-dark slide" data-interval="false" color="{{ color.name }}">
+              <div class="carousel-inner">
+                {% for file in color.files %}
+                  <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                    <img src="{{ file.preview_url }}" class="d-block w-100" alt="product image">
+                  </div>
+                {% endfor %}
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel{{ forloop.counter }}" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel{{ forloop.counter }}" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel{{ forloop.counter }}" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel{{ forloop.counter }}" data-bs-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Next</span>
-            </button>
-          </div>
-        {% else %}
-          <div id="imageCarousel{{ forloop.counter }}" class="carousel carousel-dark slide col-8" data-interval="false" color="{{ color.name }}" hidden>
-            <div class="carousel-inner">
-              {% for file in color.files %}
-                <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                  <img src="{{ file.preview_url }}" class="d-block w-100" alt="product image">
-                </div>
-              {% endfor %}
+          {% else %}
+            <div id="imageCarousel{{ forloop.counter }}" class="carousel carousel-dark slide" data-interval="false" color="{{ color.name }}" hidden>
+              <div class="carousel-inner">
+                {% for file in color.files %}
+                  <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                    <img src="{{ file.preview_url }}" class="d-block w-100" alt="product image">
+                  </div>
+                {% endfor %}
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel{{ forloop.counter }}" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel{{ forloop.counter }}" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel{{ forloop.counter }}" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel{{ forloop.counter }}" data-bs-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Next</span>
-            </button>
-          </div>
-        {% endif %}
-      {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </div>
       <div class="col-4">
         <h1>${{ curr.retail_price }}</h1>
         
-        <form id="variant_form" action="{% url 'product' product_id=product.id%}" method="post">
+        <form id="variant-form" action="{% url 'add_to_cart' %}" method="post">
           {% csrf_token %}
-          <input type="text" name="variant_id" value="{{ variant.variant_id }}" hidden>
+          <input type="text" name="variant_id" id="variant-id" hidden>
           <!-- COLOR -->
           <div class="list-group-horizontal">
             {% for color in colors %}
               {% if color == variant.color_code%}
-                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" autocomplete="off" value="{{ color.name }}" onchange="onChange()" checked>
-                <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}">X</label>
+                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.sizes }}" onchange="onChange()" checked>
+                <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}"><div class="tooltip"><span class="tooltiptext">{{ color.name }}</span></div></label>
               {% else %}
-                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" autocomplete="off" value="{{ color.name }}" onchange="onChange()">
-                <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}"></label>
+                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.sizes }}" onchange="onChange()">
+                <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}"><div class="tooltip"><span class="tooltiptext">{{ color.name }}</span></div></label>
               {% endif %}
             {% endfor %}
           </div>
@@ -70,20 +72,38 @@
               {% endif %}
             {% endfor %}
           </select>
-          <input class="btn btn-primary" type="submit" formaction="{% url 'product' product_id=product.id %}" hidden>
-          <input class="btn btn-primary" type="submit" formaction="{% url 'add_to_cart' %}" value="Add to Cart">
+          <input class="btn btn-primary" type="button" value="Add to Cart" onclick="onSubmit()">
         </form>
       </div>
     </div>
   </div>
   <script>
+    // On color select
     function onChange() {
-      color = document.querySelector('input[name="color"]:checked').value;
-      console.log(color)
-      document.querySelectorAll('.carousel').forEach(elem => {
-        elem.hidden = true
+      color = document.querySelector('input[name="color"]:checked');
+      // Change size options
+      sizes = document.querySelectorAll('#size option')
+      sizes.forEach(size => {
+        if (color.value.includes(size.value)) {
+          size.classList.remove('disabled')
+        } else {
+          size.classList.add('disabled')
+        }
       })
-      document.querySelector(`.carousel[color="${color}"]`).hidden = false
+      // Change pictures
+      document.querySelectorAll('.carousel').forEach(elem => {
+        elem.hidden = true;
+      });
+      document.querySelector(`.carousel[color="${color.id}"]`).hidden = false;
+    }
+    // On add to cart
+    function onSubmit() {
+      color = JSON.parse(document.querySelector('input[name="color"]:checked').value);
+      size = document.querySelector('#size option:checked').value;
+      console.log(color, size);
+      console.log(color[size])
+      document.getElementById('variant-id').value = color[size];
+      document.getElementById('variant-form').submit();
     }
   </script>
 {% endblock %}
