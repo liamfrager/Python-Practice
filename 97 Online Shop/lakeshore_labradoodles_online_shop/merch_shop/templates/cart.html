@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h1>My cart</h1>
+  <h1>Cart</h1>
   {% if cart %}
     <ul class="list-group list-group-flush">
       {% for id, product in cart.items %}
@@ -32,7 +32,7 @@
       </li>
     </ul>
   {% else %}
-    <h3>Your cart is empty.</h3>
+    <h6>Your cart is empty.</h6>
   {% endif %}
   
 
