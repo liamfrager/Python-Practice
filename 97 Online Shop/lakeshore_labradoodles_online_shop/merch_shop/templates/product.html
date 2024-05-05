@@ -25,23 +25,23 @@
         <span>{{ variant.color }}</span>
         <span>{{ variant.size }}</span>
         
-        <form action="{% url 'product' product_id=product.id%}" method="post" onchange="this.form.submit()">
+        <form id="variant_form" action="{% url 'product' product_id=product.id%}" method="post">
           {% csrf_token %}
           <input type="text" name="variant_id" value="{{ variant.variant_id }}" hidden>
           <!-- COLOR -->
           <div class="list-group-horizontal">
             {% for color in colors %}
               {% if color == variant.color_code%}
-                <input type="radio" class="btn-check" name="color" id="{{ color }}" autocomplete="off" value="{{ color }}" onchange="this.form.submit()" checked>
+                <input type="radio" class="btn-check" name="color" id="{{ color }}" autocomplete="off" value="{{ color }}" onchange="onChange()" checked>
                 <label class="btn color-variant" style="background-color: {{ color }};" for="{{ color }}">X</label>
               {% else %}
-                <input type="radio" class="btn-check" name="color" id="{{ color }}" autocomplete="off" value="{{ color }}" onchange="this.form.submit()">
+                <input type="radio" class="btn-check" name="color" id="{{ color }}" autocomplete="off" value="{{ color }}" onchange="onChange()">
                 <label class="btn color-variant" style="background-color: {{ color }};" for="{{ color }}"></label>
               {% endif %}
             {% endfor %}
           </div>
           <!-- SIZE -->
-          <select class="form-select" aria-label="Size" onchange="this.form.submit()">
+          <select id="size" class="form-select" aria-label="Size" onchange="onChange()">
             {% for size in sizes %}
               {% if size == curr.size %}
                 <option value="{{ size }}" selected>{{ size }}</option>
@@ -56,4 +56,27 @@
       </div>
     </div>
   </div>
+  <script>
+    function onChange() {
+      form = document.getElementById('variant_form')
+      color = document.querySelector('input[name="color"]:checked').value;
+      size = document.getElementById('size').value
+      data = {
+        color: color,
+        size: size,
+      }
+      console.log(data)
+      // remove images
+      images = document.getElementsByClassName('carousel-item')
+      for (let i = 0; i < images.length; i++) {
+        images[i].remove();
+      }
+      // add images
+      carousel = document.getElementsByClassName('carousel-inner')[0]
+      console.log(forloop.index)
+      //<div class="carousel-item{% if forloop.first %} active{% endif %}">
+      //  <img src="{{ file.preview_url }}" class="d-block w-100" alt="product image">
+      //</div>
+    }
+  </script>
 {% endblock %}

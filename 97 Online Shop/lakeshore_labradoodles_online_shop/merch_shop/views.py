@@ -1,5 +1,5 @@
 import json
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render, redirect
 from .models import ProductVariant
 import requests as req
@@ -33,15 +33,6 @@ def product(request: HttpRequest, product_id):
         params={'limit': 100}
     )
     product = res.json()['result']
-    if request.method == 'POST':
-        color = request.POST['color']
-        size = request.POST['size']
-        var_id = ProductVariant.objects.get(
-            color_code=color, size=size).variant_id
-    else:
-        var_id = product['sync_variants'][0]['product']['variant_id']
-    curr = [v for v in product['sync_variants']
-            if v['product']['variant_id'] == var_id][0]
     variants = []
     for variant in product['sync_variants']:
         variant_id = variant['variant_id']
@@ -67,7 +58,7 @@ def product(request: HttpRequest, product_id):
     sizes = set([variant.size for variant in variants])
     sizes = [size for size in ['S', 'M', 'L',
                                'XL', '2XL', '3XL', '4XL'] if size in sizes]
-    return render(request, 'product.html', {'product': product['sync_product'], 'variants': variants, 'colors': colors, 'sizes': sizes, 'curr': curr})
+    return render(request, 'product.html', {'product': product['sync_product'], 'variants': product['sync_variants'], 'colors': colors, 'sizes': sizes})
 
 
 def cart(request: HttpRequest):
