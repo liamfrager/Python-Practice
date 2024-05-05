@@ -55,6 +55,12 @@ def product(request: HttpRequest, product_id):
             variants.append(var)
 
     colors = set([variant.color_code for variant in variants])
+    colors = [{
+        'code': color,
+        'name': ProductVariant.objects.filter(color_code=color)[0].color_name,
+        'files': next(variant for variant in product['sync_variants'] if variant['color'] == ProductVariant.objects.filter(color_code=color)[0].color_name)['files'],
+    } for color in colors]
+    # TODO: make new model to store color_code - color_name relationship. use this to pass over both in colors... or just expand above code?
     sizes = set([variant.size for variant in variants])
     sizes = [size for size in ['S', 'M', 'L',
                                'XL', '2XL', '3XL', '4XL'] if size in sizes]
