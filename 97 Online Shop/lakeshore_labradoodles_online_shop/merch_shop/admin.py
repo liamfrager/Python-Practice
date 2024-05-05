@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ShopProduct
+from .models import ProductVariant
 
 # Register your models here.
-admin.site.register(ShopProduct)
+admin.site.register(ProductVariant)

@@ -1,16 +1,59 @@
 {% extends 'base.html' %}
 {% block content %}
-  <div class="card" style="width: 18rem;">
-    <img src="{{ product.img }}" class="card-img-top" alt="...">
-    <div class="card-body">
-      <span>{{ product.name }}</span>
-      <span>${{ product.price }}</span>
-      <p class="card-text">{{ product.description }}
+  <div class="container">
+    <h2>{{ product.name }}</h2>
+    <div class="row">
+      <div id="imageCarousel" class="carousel slide col-8" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% for file in curr.files %}
+            <div class="carousel-item{% if forloop.first %} active{% endif %}">
+              <img src="{{ file.preview_url }}" class="d-block w-100" alt="product image">
+            </div>
+          {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+      <div class="col-4">
+        <h1>${{ curr.retail_price }}</h1>
+        <span>{{ variant.color }}</span>
+        <span>{{ variant.size }}</span>
+        
+        <form action="{% url 'product' product_id=product.id%}" method="post" onchange="this.form.submit()">
+          {% csrf_token %}
+          <input type="text" name="variant_id" value="{{ variant.variant_id }}" hidden>
+          <!-- COLOR -->
+          <div class="list-group-horizontal">
+            {% for color in colors %}
+              {% if color == variant.color_code%}
+                <input type="radio" class="btn-check" name="color" id="{{ color }}" autocomplete="off" value="{{ color }}" onchange="this.form.submit()" checked>
+                <label class="btn color-variant" style="background-color: {{ color }};" for="{{ color }}">X</label>
+              {% else %}
+                <input type="radio" class="btn-check" name="color" id="{{ color }}" autocomplete="off" value="{{ color }}" onchange="this.form.submit()">
+                <label class="btn color-variant" style="background-color: {{ color }};" for="{{ color }}"></label>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <!-- SIZE -->
+          <select class="form-select" aria-label="Size" onchange="this.form.submit()">
+            {% for size in sizes %}
+              {% if size == curr.size %}
+                <option value="{{ size }}" selected>{{ size }}</option>
+              {% else %}
+                <option value="{{ size }}">{{ size }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <input class="btn btn-primary" type="submit" formaction="{% url 'product' product_id=product.id %}" hidden>
+          <input class="btn btn-primary" type="submit" formaction="{% url 'add_to_cart' %}" value="Add to Cart">
+        </form>
+      </div>
+    </div>
   </div>
-  <form action="{% url 'add_to_cart' %}" method="post">
-    {% csrf_token %}
-    <input type="text" name="product_id" value="{{ product.pk }}" hidden>
-    <input type="number" name="amount" id="amount">
-    <input type="submit" value="Add to Cart">
-  </form>
 {% endblock %}

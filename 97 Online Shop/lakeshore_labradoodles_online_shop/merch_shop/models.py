@@ -3,8 +3,8 @@ from django.db import models
 # Create your models here.
 
 
-class ShopProduct(models.Model):
-    name = models.CharField(max_length=200)
-    price = models.DecimalField(max_digits=5, decimal_places=2)
-    stock = models.IntegerField(default=0)
-    img = models.CharField(max_length=1000)
+class ProductVariant(models.Model):
+    variant_id = models.IntegerField()
+    color_name = models.CharField(max_length=50)
+    color_code = models.CharField(max_length=7)
+    size = models.CharField(max_length=4)

@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h1>Hello world!</h1>
+  <h1>Lakeshore Labradoodles Merch Shop!</h1>
   <div class="row row-cols-4 row-cols-md-2 g-4">
     {% for product in products %}
       <div class="col">
-        <a href="{% url 'product' product_id=product.pk %}">
+        <a href="{% url 'product' product_id=product.id %}">
           <div class="card" style="width: 18rem;">
-            <img src="{{ product.img }}" class="card-img-top" alt="...">
+            <img src="{{ product.thumbnail_url }}" class="card-img-top" alt="...">
             <div class="card-body">
               <span>{{ product.name }}</span>
-              <span>${{ product.price }}</span>
-              <p class="card-text">{{ product.description }}</p>
+              <!-- <span>${{ product.price }}</span>
+              <p class="card-text">{{ product.description }}</p> -->
             </div>
           </div>
         </a>
