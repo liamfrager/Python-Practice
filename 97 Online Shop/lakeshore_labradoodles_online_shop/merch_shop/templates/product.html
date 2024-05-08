@@ -37,11 +37,10 @@
             {% for color in colors %}
               {% if forloop.first %}
                 <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.sizes }}" onchange="onChange()" checked>
-                <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}"><div class="tooltip"><span class="tooltiptext">{{ color.name }}</span></div></label>
               {% else %}
                 <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.sizes }}" onchange="onChange()">
-                <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}"><div class="tooltip"><span class="tooltiptext">{{ color.name }}</span></div></label>
               {% endif %}
+              <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}" title="{{ color.name }}"></label>
             {% endfor %}
           </div>
           <!-- SIZE -->
