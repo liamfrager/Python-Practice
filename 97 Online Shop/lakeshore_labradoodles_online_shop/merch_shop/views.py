@@ -114,6 +114,7 @@ def remove_from_cart(request: HttpRequest, variant_id):
 
 
 def create_checkout_session(request: HttpRequest):
+    DOMAIN = 'localhost:8000'
     try:
         session = stripe.checkout.Session.create(
             ui_mode='embedded',
@@ -125,7 +126,7 @@ def create_checkout_session(request: HttpRequest):
                 },
             ],
             mode='payment',
-            return_url=YOUR_DOMAIN + \
+            return_url=DOMAIN + \
             '/return.html?session_id={CHECKOUT_SESSION_ID}',
         )
     except Exception as e:
