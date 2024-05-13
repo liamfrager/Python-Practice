@@ -32,6 +32,9 @@
             </div>
         </li>
       </ul>
+      <div class="d-flex justify-content-end mt-1">
+        <a href="{% url 'checkout' %}" class="btn btn-primary">Checkout</a>
+      </div>
     {% else %}
       <h6>Your cart is empty.</h6>
     {% endif %}

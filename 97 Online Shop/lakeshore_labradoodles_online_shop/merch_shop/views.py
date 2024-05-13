@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+STRIPE_API_KEY = os.getenv('STRIPE_API_KEY')
 PRINTFUL_AUTH_TOKEN = os.getenv('PRINTFUL_AUTH_TOKEN')
 PRINTFUL_API_ENDPOINT = 'https://api.printful.com/'
 PRINTFUL_API_HEADERS = {
@@ -88,6 +89,7 @@ def cart(request: HttpRequest):
         order_total = sum([cart[id]['total_price'] for id in cart])
     else:
         order_total = 0
+    print(cart)
     return render(request, 'cart.html', {'cart': cart, 'order_total': order_total})
 
 
@@ -97,7 +99,9 @@ def add_to_cart(request: HttpRequest):
         if cart == None:
             cart = {}
         cart[request.POST['variant_id']] = {
-            'quantity': 1}
+            'price': '{{PRICE_ID}}',  # TODO: fix this
+            'quantity': 1,
+        }
         request.session['cart'] = cart
         request.session.modified = True
         return redirect('cart')
@@ -113,72 +117,27 @@ def remove_from_cart(request: HttpRequest, variant_id):
     return redirect('cart')
 
 
-def create_checkout_session(request: HttpRequest):
-    DOMAIN = 'localhost:8000'
+def checkout(request: HttpRequest):
+    YOUR_DOMAIN = 'http://localhost:8000'
+    stripe.api_key = STRIPE_API_KEY
     try:
-        session = stripe.checkout.Session.create(
-            ui_mode='embedded',
+        checkout_session = stripe.checkout.Session.create(
             line_items=[
                 {
                     # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': '{{PRICE_ID}}',
+                    'price': 'price_1PFnsqP92FIWHIYqCtsqnYwE',
                     'quantity': 1,
                 },
             ],
             mode='payment',
-            return_url=DOMAIN + \
-            '/return.html?session_id={CHECKOUT_SESSION_ID}',
+            success_url=YOUR_DOMAIN + '/success',
+            cancel_url=YOUR_DOMAIN + '/cart',
         )
     except Exception as e:
         return str(e)
 
-    return json.jsonify(clientSecret=session.client_secret)
+    return redirect(checkout_session.url)
 
 
-def session_status():
-    session = stripe.checkout.Session.retrieve(request.args.get('session_id'))
-
-    return jsonify(status=session.status, customer_email=session.customer_details.email)
-
-
-# This is your test secret API key.
-stripe.api_key = 'sk_test_51PCjpr2NyZPCpoqgVAKKOfT3Do2FxHtEB7KxXGfNKTZ1taIdTjz0Y1MUa8n37dabmVhDLijb9ZC3IugAOS5pvuxy00CMfcdFIT'
-
-# app = Flask(__name__,
-#             static_url_path='',
-#             static_folder='public')
-
-# YOUR_DOMAIN = 'http://localhost:4242'
-
-
-# @app.route('/create-checkout-session', methods=['POST'])
-# def create_checkout_session():
-#     try:
-#         session = stripe.checkout.Session.create(
-#             ui_mode='embedded',
-#             line_items=[
-#                 {
-#                     # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-#                     'price': '{{PRICE_ID}}',
-#                     'quantity': 1,
-#                 },
-#             ],
-#             mode='payment',
-#             return_url=YOUR_DOMAIN + \
-#             '/return.html?session_id={CHECKOUT_SESSION_ID}',
-#         )
-#     except Exception as e:
-#         return str(e)
-
-#     return jsonify(clientSecret=session.client_secret)
-
-
-# @app.route('/session-status', methods=['GET'])
-# def session_status():
-#     session = stripe.checkout.Session.retrieve(request.args.get('session_id'))
-
-#     return jsonify(status=session.status, customer_email=session.customer_details.email)
-
-
-# if __name__ == '__main__':
-#     app.run(port=4242)
+def success(request: HttpRequest):
+    return redirect('success')
