@@ -124,9 +124,12 @@ def checkout(request: HttpRequest):
         checkout_session = stripe.checkout.Session.create(
             line_items=[
                 {
-                    # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                    # TODO: Provide the exact Price ID (for example, pr_1234) of the product you want to sell
                     'price': 'price_1PFnsqP92FIWHIYqCtsqnYwE',
                     'quantity': 1,
+                }, {
+                    'price': 'price_1PFnj9P92FIWHIYqw1lX9yKt',
+                    'quantity': 3,
                 },
             ],
             mode='payment',
@@ -141,3 +144,14 @@ def checkout(request: HttpRequest):
 
 def success(request: HttpRequest):
     return redirect('success')
+
+
+# TODO: decide how to reconcile printful/stripe APIs
+# link printful product_id to stripe metadata?
+# how many extra API calls will this require?
+# would it be better to store it in a database? if so, how to maintain?
+
+# TODO: display all products on home page
+# TODO: display product info on product page
+# TODO: get stripe price ids based on size (use price_data to dynamically create price (default + size bonus))
+# TODO: add ids to cart/cookies (how to keep track of color for ordering from printful? db model that connects printful/stripe ids)
