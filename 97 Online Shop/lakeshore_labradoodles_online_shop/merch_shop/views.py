@@ -2,59 +2,26 @@ import stripe
 import json
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render, redirect
-from .models import ProductVariant
+from .models import Product, Variant
 import requests as req
 import os
 from dotenv import load_dotenv
+from .printful import Printful
 load_dotenv()
 
 STRIPE_API_KEY = os.getenv('STRIPE_API_KEY')
 PRINTFUL_AUTH_TOKEN = os.getenv('PRINTFUL_AUTH_TOKEN')
-PRINTFUL_API_ENDPOINT = 'https://api.printful.com/'
-PRINTFUL_API_HEADERS = {
-    'Authorization': 'Bearer ' + PRINTFUL_AUTH_TOKEN
-}
+printful = Printful(PRINTFUL_AUTH_TOKEN)
 
 
 # Create your views here.
 def home(request: HttpRequest):
-    res = req.get(
-        url=PRINTFUL_API_ENDPOINT + 'sync/products',
-        headers=PRINTFUL_API_HEADERS,
-        params={'status': 'synced'}
-    )
-    products = res.json()['result']
-    print(products)
+    products = printful.get_all_products()
     return render(request, 'index.html', {'products': products})
 
 
 def product(request: HttpRequest, product_id):
-    res = req.get(
-        url=PRINTFUL_API_ENDPOINT + 'sync/products/' + str(product_id),
-        headers=PRINTFUL_API_HEADERS,
-        params={'limit': 100}
-    )
-    product = res.json()['result']
-    variants = []
-    for variant in product['sync_variants']:
-        variant_id = variant['variant_id']
-        try:
-            var = ProductVariant.objects.get(variant_id=variant_id)
-        except ProductVariant.DoesNotExist:
-            res = req.get(
-                url=PRINTFUL_API_ENDPOINT +
-                'products/variant/' + str(variant_id),
-                headers=PRINTFUL_API_HEADERS,
-            )
-            data = res.json()['result']['variant']
-            var = ProductVariant.objects.create(
-                variant_id=variant_id,
-                color_name=data['color'],
-                color_code=data['color_code'],
-                size=data['size'],
-            )
-        finally:
-            variants.append(var)
+    variants = printful.get_variants(product_id)
     # Get colors
     colors = set([variant.color_code for variant in variants])
     colors = [{
