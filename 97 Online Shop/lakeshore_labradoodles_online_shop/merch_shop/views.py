@@ -19,7 +19,7 @@ def home(request: HttpRequest):
 
 
 def product(request: HttpRequest, product_id):
-    product = shop.get_product()
+    product = shop.get_product(int(product_id))
     return render(request, 'product.html', {'product': product})
 
 

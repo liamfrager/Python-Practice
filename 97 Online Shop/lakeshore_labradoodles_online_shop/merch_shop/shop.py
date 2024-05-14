@@ -1,6 +1,5 @@
 from decimal import Decimal
 import os
-from django.http import HttpRequest
 import requests
 import stripe
 from .models import Product, Variant, Color
@@ -28,7 +27,7 @@ class Printful():
         )
         return response.json()['result']
 
-    def get_product(self, id: int | str) -> dict:
+    def get_product(self, id: int) -> dict:
         '''Takes a Printful sync product ID as an input and returns details on the product.'''
         response = requests.get(
             url=self.api_endpoint + 'sync/products/' + str(id),
@@ -37,13 +36,13 @@ class Printful():
         )
         return response.json()['result']
 
-    def get_variant_ids(self, id: int | str) -> dict:
+    def get_variant_ids(self, id: int) -> dict:
         '''Takes a Printful sync product ID as an input and returns details on all its variants.'''
         product = self.get_product(id)
         variants_ids = [variant['id'] for variant in product['sync_variants']]
         return variants_ids
 
-    def get_variant(self, id: int | str) -> dict:
+    def get_variant(self, id: int) -> dict:
         '''Takes a Printful sync variant ID as an input and returns details on that variant.'''
         response = requests.get(
             url=self.api_endpoint + 'store/variant/' + str(id),
@@ -51,7 +50,7 @@ class Printful():
         )
         return response.json()['result']['sync_variant']
 
-    def get_color_code(self, id: int | str) -> str:
+    def get_color_code(self, id: int) -> str:
         '''Takes a Printful product variant ID as an input and returns the color code associated with that variant.'''
         response = requests.get(
             url=self.api_endpoint + 'products/variant/' + str(id),
@@ -90,27 +89,35 @@ class Shop():
         self.stripe = Stripe(STRIPE_API_KEY)
 
     def get_all_products(self) -> list[Product]:
+        '''Returns all product entries in the database or creates them if they don't exist.'''
         # try:
         syncs = self.printful.get_all_products()
         products = []
         for sync in syncs:
             # Get product from database or create it if it doesn't exist.
-            try:
-                product = Product.objects.get(id=sync['id'])
-            except Product.DoesNotExist:
-                product = self.create_product(sync['id'])
-        products.append(product)
+            product = self.get_product(sync['id'])
+            products.append(product)
         # except Exception as e:
         #     print(e)
         #     products = []
         return products
 
-    def create_product(self, product_id: int | str) -> Product:
-        '''Takes Printful product ID as an input and creates a product entry in the database.'''
+    def get_product(self, id: int) -> Product:
+        '''Takes Printful sync product ID as an input and returns its entry in the database or creates it if it doesn't exist.'''
+        try:
+            product = Product.objects.get(id=id)
+        except Product.DoesNotExist:
+            product = self.create_product(id)
+        return product
+
+    def create_product(self, product_id: int) -> Product:
+        '''Takes Printful sync product ID as an input and creates a product entry in the database.'''
         sync = self.printful.get_product(product_id)
         # Create entry in database for the product
         new_product = Product.objects.create(
             id=product_id,
+            name=sync['sync_product']['name'],
+            image=sync['sync_product']['thumbnail_url'],
             sizes=set([variant['size'] for variant in sync['sync_variants']]),
         )
 
@@ -152,9 +159,6 @@ class Shop():
         )
         return variant
 
-    def get_product(self, id) -> Product:
-        pass
-
     def get_cart(self, cart) -> dict:
         if cart == None:
             cart = {
@@ -174,6 +178,7 @@ class Shop():
         return cart
 
     def checkout(self) -> stripe.checkout.Session:
+        # TODO: verify that all items in the cart still exist/are in stock through printful.
         YOUR_DOMAIN = 'http://localhost:8000'
         checkout_session = stripe.checkout.Session.create(
             line_items=[
@@ -191,3 +196,6 @@ class Shop():
             cancel_url=YOUR_DOMAIN + '/cart',
         )
         return checkout_session
+
+
+# TODO: rewrite all functions to not draw from database but straight from printful.

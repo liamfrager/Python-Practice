@@ -1,8 +1,7 @@
 from django.db import models
 
-# Create your models here.
 
-
+# MODELS
 class Color(models.Model):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=7)
@@ -20,7 +19,10 @@ class Product(models.Model):
         ("5XL", "5XL"),
     ]
     id = models.IntegerField(primary_key=True)  # Printful product ID
-    colors = models.ManyToManyField(Color, null=True)
+    name = models.CharField(max_length=100, default='')
+    description = models.CharField(max_length=255, default='')
+    image = models.URLField(default='')
+    colors = models.ManyToManyField(Color, default=None)
     sizes = models.CharField(max_length=4, choices=SIZE_OPTIONS)
 
 

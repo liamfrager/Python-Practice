@@ -7,11 +7,10 @@
         <div class="col-12 col-md-6 col-lg-4">
           <a href="{% url 'product' product_id=product.id %}">
             <div class="card">
-              <img src="{{ product.thumbnail_url }}" class="card-img-top" alt="...">
+              <img src="{{ product.image }}" class="card-img-top" alt="image of {{ product.name }}">
               <div class="card-body">
                 <span>{{ product.name }}</span>
-                <!-- <span>${{ product.price }}</span>
-                <p class="card-text">{{ product.description }}</p> -->
+                <p class="card-text">{{ product.description }}</p>
               </div>
             </div>
           </a>
