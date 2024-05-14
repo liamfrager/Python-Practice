@@ -35,7 +35,7 @@ def add_to_cart(request: HttpRequest):
         if cart == None:
             cart = {}
         cart[request.POST['variant_id']] = {
-            # TODO: fix thisrequest.session.get('cart')
+            # TODO: fix this
             'price': '{{PRICE_ID}}',
             'quantity': 1,
         }
@@ -75,3 +75,5 @@ def success(request: HttpRequest):
 # TODO: display product info on product page
 # TODO: get stripe price ids based on size (use price_data to dynamically create price (default + size bonus))
 # TODO: add ids to cart/cookies (how to keep track of color for ordering from printful? db model that connects printful/stripe ids)
+
+# TODO: CHECKOUT SESSION SHOULD CREATE PRODUCTS INLINE SO THAT PRODUCT DATA DOESN'T HAVE TO BE UPDATED ON BOTH PRINTFUL AND STRIPE.

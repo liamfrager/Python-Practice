@@ -3,7 +3,7 @@ import os
 from django.http import HttpRequest
 import requests
 import stripe
-from .models import Product, Variant, Color, Price
+from .models import Product, Variant, Color
 
 PRINTFUL_AUTH_TOKEN = os.getenv('PRINTFUL_AUTH_TOKEN')
 STRIPE_API_KEY = os.getenv('STRIPE_API_KEY')
@@ -46,7 +46,7 @@ class Printful():
     def get_variant(self, id: int | str) -> dict:
         '''Takes a Printful sync variant ID as an input and returns details on that variant.'''
         response = requests.get(
-            url=self.api_endpoint + 'store/variant/' + id,
+            url=self.api_endpoint + 'store/variant/' + str(id),
             headers=self.api_headers,
         )
         return response.json()['result']['sync_variant']
@@ -54,7 +54,7 @@ class Printful():
     def get_color_code(self, id: int | str) -> str:
         '''Takes a Printful product variant ID as an input and returns the color code associated with that variant.'''
         response = requests.get(
-            url=self.api_endpoint + 'products/variant/' + id,
+            url=self.api_endpoint + 'products/variant/' + str(id),
             headers=self.api_headers,
         )
         return response.json()['result']['variant']['color_code']
@@ -67,10 +67,21 @@ class Stripe():
         self.api_key = api_key
         stripe.api_key = self.api_key
 
-    def get_price(self, id):
+    def get_price(self, id) -> stripe.SearchResultObject[stripe.Price]:
         '''Takes a Printful variant ID as an input and returns a stripe price object.'''
-        stripe.Price.search(
-            query=f"active:'true' AND metadata['printful_variant_id']:'{id}'")
+        price = stripe.Price.search(
+            query=f"active:'true' AND metadata['printful_product_id']:'{id}'")
+        if price['data'] == []:
+            price = self.create_price()
+        print(price)
+        return price
+
+    def create_price(self):
+        stripe.Price.create(
+            currency="usd",
+            unit_amount=1000,
+            product_data={"name": "Gold Plan"},
+        )
 
 
 class Shop():
@@ -79,49 +90,48 @@ class Shop():
         self.stripe = Stripe(STRIPE_API_KEY)
 
     def get_all_products(self) -> list[Product]:
-        try:
-            syncs = self.printful.get_all_products()
-            products = []
-            for sync in syncs:
-                # Get product from database or create it if it doesn't exist.
-                try:
-                    product = Product.objects.get(id=sync['id'])
-                except Product.DoesNotExist:
-                    product = self.create_product(sync['id'])
-            products.append(product)
-        except:
-            products = []
+        # try:
+        syncs = self.printful.get_all_products()
+        products = []
+        for sync in syncs:
+            # Get product from database or create it if it doesn't exist.
+            try:
+                product = Product.objects.get(id=sync['id'])
+            except Product.DoesNotExist:
+                product = self.create_product(sync['id'])
+        products.append(product)
+        # except Exception as e:
+        #     print(e)
+        #     products = []
         return products
 
     def create_product(self, product_id: int | str) -> Product:
         '''Takes Printful product ID as an input and creates a product entry in the database.'''
         sync = self.printful.get_product(product_id)
-        variants = []
-        colors = []
-        sizes = []
+        # Create entry in database for the product
+        new_product = Product.objects.create(
+            id=product_id,
+            sizes=set([variant['size'] for variant in sync['sync_variants']]),
+        )
 
-        # Create variants
+        # Create variants for product (must be done after the entry for the product is created).
+        variants: list[Variant] = []
         for sync_variant in sync['sync_variants']:
             # Get variant from database or create it if it doesn't exist.
             try:
                 variant = Variant.objects.get(id=sync_variant['id'])
             except Variant.DoesNotExist:
-                variant = self.create_variant(sync_variant)
-
+                variant = self.create_variant(
+                    sync_variant, parent_product=new_product)
             variants.append(variant)
 
-        # Get colors from database or create it if it doesn't exist.
-        color_names = set([variant['color']
-                          for variant in sync['sync_variants']])
+        # Add color data to the product.
+        colors = set([(variant.color) for variant in variants])
+        new_product.colors.set(colors)
 
-        new_product = Product.objects.create(
-            id=id,
-            colors=colors,
-            sizes=set([variant['size'] for variant in sync['sync_variants']]),
-        )
         return new_product
 
-    def create_variant(self, sync_variant):
+    def create_variant(self, sync_variant, parent_product):
         '''Takes Printful sync_variant details as an input and creates a variant entry in the database.'''
         # Get color from database or create
         try:
@@ -132,18 +142,10 @@ class Shop():
                 code=self.printful.get_color_code(
                     sync_variant['product']['variant_id']),
             )
-        # Get price from database or create
-        try:
-            price = Price.objects.get(name=sync_variant['Price'])
-        except Price.DoesNotExist:
-            price = Price.objects.create(
-                id=self.stripe.get_price(),
-                value=Decimal(sync_variant['retail_price']),
-            )
         # Write to database
         variant = Variant.objects.create(
             id=sync_variant['id'],  # Printful variant ID
-            product=sync_variant['sync_product_id'],
+            product=parent_product,
             price=Decimal(sync_variant['retail_price']),
             color=color,
             size=sync_variant['size'],
@@ -153,7 +155,7 @@ class Shop():
     def get_product(self, id) -> Product:
         pass
 
-    def get_cart(self, cart):
+    def get_cart(self, cart) -> dict:
         if cart == None:
             cart = {
                 'order_total': 0

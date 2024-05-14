@@ -8,11 +8,6 @@ class Color(models.Model):
     code = models.CharField(max_length=7)
 
 
-class Price(models.Model):
-    id = models.CharField(primary_key=True, max_length=30)  # Stripe price ID
-    value = models.DecimalField(decimal_places=2, max_digits=5)  # Price in USD
-
-
 class Product(models.Model):
     SIZE_OPTIONS = [
         ("S", "S"),
@@ -25,13 +20,13 @@ class Product(models.Model):
         ("5XL", "5XL"),
     ]
     id = models.IntegerField(primary_key=True)  # Printful product ID
-    colors = models.ManyToManyField(Color)
+    colors = models.ManyToManyField(Color, null=True)
     sizes = models.CharField(max_length=4, choices=SIZE_OPTIONS)
 
 
 class Variant(models.Model):
     id = models.IntegerField(primary_key=True)  # Printful variant ID
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    price = models.ForeignKey(Price, on_delete=models.CASCADE)
+    price = models.DecimalField(decimal_places=2, max_digits=5)
     color = models.ForeignKey(Color, on_delete=models.CASCADE)
     size = models.CharField(max_length=4)
