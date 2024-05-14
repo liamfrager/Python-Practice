@@ -6,58 +6,27 @@ from .models import Product, Variant
 import requests as req
 import os
 from dotenv import load_dotenv
-from .printful import Printful
+from .shop import Shop
 load_dotenv()
 
-STRIPE_API_KEY = os.getenv('STRIPE_API_KEY')
-PRINTFUL_AUTH_TOKEN = os.getenv('PRINTFUL_AUTH_TOKEN')
-printful = Printful(PRINTFUL_AUTH_TOKEN)
+shop = Shop()
 
 
-# Create your views here.
+# VIEWS
 def home(request: HttpRequest):
-    products = printful.get_all_products()
+    products = shop.get_all_products()
     return render(request, 'index.html', {'products': products})
 
 
 def product(request: HttpRequest, product_id):
-    variants = printful.get_variants(product_id)
-    # Get colors
-    colors = set([variant.color_code for variant in variants])
-    colors = [{
-        'code': color,
-        'name': ProductVariant.objects.filter(color_code=color)[0].color_name,
-        'files': next(variant for variant in product['sync_variants'] if variant['color'] == ProductVariant.objects.filter(color_code=color)[0].color_name)['files'],
-        'sizes': json.dumps({variant['size']: variant['id'] for variant in product['sync_variants'] if variant['color'] == ProductVariant.objects.filter(color_code=color)[0].color_name})
-    } for color in colors]
-    # Get sizes
-    sizes = set([variant.size for variant in variants])
-    sizes = [size for size in ['S', 'M', 'L',
-                               'XL', '2XL', '3XL', '4XL'] if size in sizes]
-    return render(request, 'product.html', {'product': product['sync_product'], 'variants': product['sync_variants'], 'colors': colors, 'sizes': sizes})
+    product = shop.get_product()
+    return render(request, 'product.html', {'product': product})
 
 
 def cart(request: HttpRequest):
-    cart = request.session.get('cart')
-    if cart != None:
-        for variant_id in cart:
-            res = req.get(
-                url=PRINTFUL_API_ENDPOINT + 'sync/variant/' + variant_id,
-                headers=PRINTFUL_API_HEADERS,
-            )
-            product = res.json()['result']['sync_variant']
-            cart[variant_id] = {
-                'name': product['name'],
-                'price': float(product['retail_price']),
-                'total_price': float(product['retail_price']) * int(cart[variant_id]['quantity']),
-                'img': product['files'][0]['thumbnail_url'],
-                'quantity': cart[variant_id]['quantity'],
-            }
-        order_total = sum([cart[id]['total_price'] for id in cart])
-    else:
-        order_total = 0
-    print(cart)
-    return render(request, 'cart.html', {'cart': cart, 'order_total': order_total})
+    cart_cookies = request.session.get('cart')
+    cart = shop.get_cart(cart_cookies)
+    return render(request, 'cart.html', {'cart': cart})
 
 
 def add_to_cart(request: HttpRequest):
@@ -66,7 +35,8 @@ def add_to_cart(request: HttpRequest):
         if cart == None:
             cart = {}
         cart[request.POST['variant_id']] = {
-            'price': '{{PRICE_ID}}',  # TODO: fix this
+            # TODO: fix thisrequest.session.get('cart')
+            'price': '{{PRICE_ID}}',
             'quantity': 1,
         }
         request.session['cart'] = cart
@@ -85,28 +55,11 @@ def remove_from_cart(request: HttpRequest, variant_id):
 
 
 def checkout(request: HttpRequest):
-    YOUR_DOMAIN = 'http://localhost:8000'
-    stripe.api_key = STRIPE_API_KEY
     try:
-        checkout_session = stripe.checkout.Session.create(
-            line_items=[
-                {
-                    # TODO: Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': 'price_1PFnsqP92FIWHIYqCtsqnYwE',
-                    'quantity': 1,
-                }, {
-                    'price': 'price_1PFnj9P92FIWHIYqw1lX9yKt',
-                    'quantity': 3,
-                },
-            ],
-            mode='payment',
-            success_url=YOUR_DOMAIN + '/success',
-            cancel_url=YOUR_DOMAIN + '/cart',
-        )
+        checkout_session = shop.checkout()
+        return redirect(checkout_session.url)
     except Exception as e:
         return str(e)
-
-    return redirect(checkout_session.url)
 
 
 def success(request: HttpRequest):
