@@ -13,7 +13,9 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     
-<header>{% include 'header.html' %}</header>
+<header>
+  {% include 'header.html' %}
+</header>
 
 <main class="flex-shrink-0">
   {% block content %}{% endblock %}
@@ -22,5 +24,6 @@
 <footer class="footer mt-auto py-3 bg-light">
   {% include 'footer.html' %}
 </footer>
+
 </body>
 </html>

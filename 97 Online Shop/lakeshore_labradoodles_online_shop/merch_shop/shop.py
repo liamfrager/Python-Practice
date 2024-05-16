@@ -94,70 +94,55 @@ class Shop():
         syncs = self.printful.get_all_products()
         products = []
         for sync in syncs:
-            # Get product from database or create it if it doesn't exist.
-            product = self.get_product(sync['id'])
+            product = Product(
+                id=sync['id'],
+                name=sync['name'],
+                image=sync['thumbnail_url'],
+            )
             products.append(product)
-        # except Exception as e:
-        #     print(e)
-        #     products = []
         return products
 
     def get_product(self, id: int) -> Product:
         '''Takes Printful sync product ID as an input and returns its entry in the database or creates it if it doesn't exist.'''
-        try:
-            product = Product.objects.get(id=id)
-        except Product.DoesNotExist:
-            product = self.create_product(id)
-        return product
+        sync = self.printful.get_product(id)
 
-    def create_product(self, product_id: int) -> Product:
-        '''Takes Printful sync product ID as an input and creates a product entry in the database.'''
-        sync = self.printful.get_product(product_id)
-        # Create entry in database for the product
-        new_product = Product.objects.create(
-            id=product_id,
+        # Create product object
+        product = Product(
+            id=id,
             name=sync['sync_product']['name'],
             image=sync['sync_product']['thumbnail_url'],
             sizes=set([variant['size'] for variant in sync['sync_variants']]),
         )
 
-        # Create variants for product (must be done after the entry for the product is created).
-        variants: list[Variant] = []
-        for sync_variant in sync['sync_variants']:
-            # Get variant from database or create it if it doesn't exist.
+        # Get product colors
+        colors = []
+        for variant in sync['sync_variants']:
+            # Get color from database or create
             try:
-                variant = Variant.objects.get(id=sync_variant['id'])
-            except Variant.DoesNotExist:
-                variant = self.create_variant(
-                    sync_variant, parent_product=new_product)
-            variants.append(variant)
+                color = Color.objects.get(name=variant['color'])
+            except Color.DoesNotExist:
+                color = Color.objects.create(
+                    name=variant['color'],
+                    code=self.printful.get_color_code(
+                        variant['product']['variant_id']),
+                )
+            colors.append(color)
+        product.colors.set(set(colors))  # add unique colors to product object
+        return product
 
-        # Add color data to the product.
-        colors = set([(variant.color) for variant in variants])
-        new_product.colors.set(colors)
-
-        return new_product
-
-    def create_variant(self, sync_variant, parent_product):
-        '''Takes Printful sync_variant details as an input and creates a variant entry in the database.'''
-        # Get color from database or create
-        try:
-            color = Color.objects.get(name=sync_variant['color'])
-        except Color.DoesNotExist:
-            color = Color.objects.create(
-                name=sync_variant['color'],
-                code=self.printful.get_color_code(
-                    sync_variant['product']['variant_id']),
-            )
-        # Write to database
-        variant = Variant.objects.create(
-            id=sync_variant['id'],  # Printful variant ID
-            product=parent_product,
-            price=Decimal(sync_variant['retail_price']),
-            color=color,
-            size=sync_variant['size'],
-        )
-        return variant
+        # # Create variants for product (must be done after the entry for the product is created).
+        # variants: list[Variant] = []
+        # for sync_variant in sync['sync_variants']:
+        #     # Get variant from database or create it if it doesn't exist.
+        #     variant = Variant(
+        #         id=sync_variant['id'],  # Printful variant ID
+        #         product=product,
+        #         price=Decimal(sync_variant['retail_price']),
+        #         color=color,
+        #         size=sync_variant['size'],
+        #     )
+        #     variants.append(variant)
+        # return product, variants
 
     def get_cart(self, cart) -> dict:
         if cart == None:
@@ -198,4 +183,4 @@ class Shop():
         return checkout_session
 
 
-# TODO: rewrite all functions to not draw from database but straight from printful.
+# TODO: rewrite all functions to not draw from database but straight from Printful. Should create model objects without saving to the database.

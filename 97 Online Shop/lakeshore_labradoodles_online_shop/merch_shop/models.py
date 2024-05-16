@@ -23,7 +23,7 @@ class Product(models.Model):
     description = models.CharField(max_length=255, default='')
     image = models.URLField(default='')
     colors = models.ManyToManyField(Color, default=None)
-    sizes = models.CharField(max_length=4, choices=SIZE_OPTIONS)
+    sizes = models.CharField(max_length=4, choices=SIZE_OPTIONS, null=True)
 
 
 class Variant(models.Model):
