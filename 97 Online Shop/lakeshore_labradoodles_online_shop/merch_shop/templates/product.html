@@ -29,22 +29,26 @@
         
         <form id="variant-form" action="{% url 'add_to_cart' %}" method="post">
           {% csrf_token %}
-          <input type="text" name="variant_id" id="variant-id" hidden>
+          <input type="text" name="product_id" value="{{ product.id }}" hidden>
           <!-- COLOR -->
           <div class="list-group-horizontal">
             {% for color in product.colors.all %}
               {% if forloop.first %}
-                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.sizes }}" onchange="onChange()" checked>
+                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" onchange="onChange()" checked>
               {% else %}
-                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.sizes }}" onchange="onChange()">
+                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" onchange="onChange()">
               {% endif %}
               <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}" title="{{ color.name }}"></label>
             {% endfor %}
           </div>
           <!-- SIZE -->
-          <select id="size" class="form-select my-3" aria-label="Size" onchange="onChange()">
-            {% for size in product.sizes.all %}
-              <option value="{{ size }}">{{ size }}</option>
+          <select id="size" name="size" class="form-select my-3" aria-label="Size" onchange="onChange()">
+            {% for size in product.sizes %}
+              {% if forloop.first %}
+                <option value="{{ size }}" checked>{{ size }}</option>
+              {% else %}
+                <option value="{{ size }}">{{ size }}</option>
+              {% endif %}
             {% endfor %}
           </select>
           <input class="btn btn-primary" type="button" value="Add to Cart" onclick="onSubmit()">
@@ -56,32 +60,18 @@
     // On color select
     function onChange() {
       // Change price
-      color = document.querySelector('input[name="color"]:checked');
-      size = document.querySelector('#size option:checked').value;
-      document.querySelectorAll('h1.price').forEach(price => {
-        price.hidden = true
-      })
-      document.getElementById(JSON.parse(color.value)[size]).hidden = false;
-      // Change size options
-      sizes = document.querySelectorAll('#size option')
-      sizes.forEach(size => {
-        if (color.hasOwnProperty(size.value)) {
-          size.classList.remove('disabled')
-        } else {
-          size.classList.add('disabled')
-        }
-      })
+      
       // Change pictures
       document.querySelectorAll('.carousel').forEach(elem => {
         elem.hidden = true;
       });
-      document.querySelector(`.carousel[color="${color.id}"]`).hidden = false;
     }
     // On add to cart
     function onSubmit() {
-      color = JSON.parse(document.querySelector('input[name="color"]:checked').value);
+      color = document.querySelector('input[name="color"]:checked').value;
       size = document.querySelector('#size option:checked').value;
-      document.getElementById('variant-id').value = color[size];
+      console.log(color)
+      console.log(size)
       document.getElementById('variant-form').submit();
     }
     onChange()

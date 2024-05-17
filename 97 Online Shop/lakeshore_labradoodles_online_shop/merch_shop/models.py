@@ -8,22 +8,12 @@ class Color(models.Model):
 
 
 class Product(models.Model):
-    SIZE_OPTIONS = [
-        ("S", "S"),
-        ("M", "M"),
-        ("L", "L"),
-        ("XL", "XL"),
-        ("2XL", "2XL"),
-        ("3XL", "3XL"),
-        ("4XL", "4XL"),
-        ("5XL", "5XL"),
-    ]
     id = models.IntegerField(primary_key=True)  # Printful product ID
     name = models.CharField(max_length=100, default='')
     description = models.CharField(max_length=255, default='')
     image = models.URLField(default='')
     colors = models.ManyToManyField(Color, default=None)
-    sizes = models.CharField(max_length=4, choices=SIZE_OPTIONS, null=True)
+    sizes = models.CharField(max_length=4, null=True)
 
 
 class Variant(models.Model):

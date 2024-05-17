@@ -111,7 +111,8 @@ class Shop():
             id=id,
             name=sync['sync_product']['name'],
             image=sync['sync_product']['thumbnail_url'],
-            sizes=set([variant['size'] for variant in sync['sync_variants']]),
+            sizes=[size for size in ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'] if size in set([
+                variant['size'] for variant in sync['sync_variants']])],
         )
 
         # Get product colors
@@ -130,21 +131,14 @@ class Shop():
         product.colors.set(set(colors))  # add unique colors to product object
         return product
 
-        # # Create variants for product (must be done after the entry for the product is created).
-        # variants: list[Variant] = []
-        # for sync_variant in sync['sync_variants']:
-        #     # Get variant from database or create it if it doesn't exist.
-        #     variant = Variant(
-        #         id=sync_variant['id'],  # Printful variant ID
-        #         product=product,
-        #         price=Decimal(sync_variant['retail_price']),
-        #         color=color,
-        #         size=sync_variant['size'],
-        #     )
-        #     variants.append(variant)
-        # return product, variants
+    def get_variant(self, id, color, size) -> dict:
+        '''Takes a Printful sync product ID, color name, and size as an input, and returns details for the corresponding variant.'''
+        product = self.printful.get_product(id)
+        variant = next(
+            variant for variant in product['sync_variants'] if variant['color'] == color and variant['size'] == size)
+        return variant
 
-    def get_cart(self, cart) -> dict:
+    def get_cart(self, cart) -> list[dict]:
         if cart == None:
             cart = {
                 'order_total': 0
@@ -162,20 +156,27 @@ class Shop():
             cart['order_total'] = sum([cart[id]['total_price'] for id in cart])
         return cart
 
-    def checkout(self) -> stripe.checkout.Session:
+    def checkout(self, cart) -> stripe.checkout.Session:
+        line_items = []
+        for id, quantity in cart:
+            variant = self.printful.get_variant(id)
+            line_item = {
+                'price_data': {
+                    'currency': variant['currency'].lower(),
+                    'unit_amount': variant['retail_price'].replace('.', ''),
+                    'product_data': {
+                        'name': variant['name'],
+                        'description': '',
+                        'images': [file['thumbnail_url'] for file in variant['files']],
+                    },
+                },
+                'quantity': quantity,
+            }
+            line_items.append(line_item)
         # TODO: verify that all items in the cart still exist/are in stock through printful.
         YOUR_DOMAIN = 'http://localhost:8000'
         checkout_session = stripe.checkout.Session.create(
-            line_items=[
-                {
-                    # TODO: Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': 'price_1PFnsqP92FIWHIYqCtsqnYwE',
-                    'quantity': 1,
-                }, {
-                    'price': 'price_1PFnj9P92FIWHIYqw1lX9yKt',
-                    'quantity': 3,
-                },
-            ],
+            line_items=line_items,
             mode='payment',
             success_url=YOUR_DOMAIN + '/success',
             cancel_url=YOUR_DOMAIN + '/cart',

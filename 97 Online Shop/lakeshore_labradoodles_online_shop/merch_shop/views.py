@@ -24,8 +24,8 @@ def product(request: HttpRequest, product_id):
 
 
 def cart(request: HttpRequest):
-    cart_cookies = request.session.get('cart')
-    cart = shop.get_cart(cart_cookies)
+    cart = request.session.get('cart')
+    cart = shop.get_cart(cart)
     return render(request, 'cart.html', {'cart': cart})
 
 
@@ -34,11 +34,12 @@ def add_to_cart(request: HttpRequest):
         cart = request.session.get('cart')
         if cart == None:
             cart = {}
-        cart[request.POST['variant_id']] = {
-            # TODO: fix this
-            'price': '{{PRICE_ID}}',
-            'quantity': 1,
-        }
+        variant = shop.get_variant(
+            request.POST['product_id'],
+            request.POST['color'],
+            request.POST['size'],
+        )
+        cart[variant['id']] = 1
         request.session['cart'] = cart
         request.session.modified = True
         return redirect('cart')
@@ -56,7 +57,8 @@ def remove_from_cart(request: HttpRequest, variant_id):
 
 def checkout(request: HttpRequest):
     try:
-        checkout_session = shop.checkout()
+        cart = request.session.get('cart')
+        checkout_session = shop.checkout(cart)
         return redirect(checkout_session.url)
     except Exception as e:
         return str(e)
