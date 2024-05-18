@@ -33,16 +33,20 @@ def add_to_cart(request: HttpRequest):
     if request.method == 'POST':
         cart = request.session.get('cart')
         if cart == None:
-            cart = {}
+            cart = {
+                'items': {},
+                'order_total': 0,
+            }
         variant = shop.get_variant(
             request.POST['product_id'],
             request.POST['color'],
             request.POST['size'],
         )
-        cart[variant['id']] = 1
+        cart['items'][variant['id']] = 1
         request.session['cart'] = cart
         request.session.modified = True
         return redirect('cart')
+    return 'Could not add to cart.'  # TODO: add error handling
 
 
 def remove_from_cart(request: HttpRequest, variant_id):
@@ -56,12 +60,12 @@ def remove_from_cart(request: HttpRequest, variant_id):
 
 
 def checkout(request: HttpRequest):
-    try:
-        cart = request.session.get('cart')
-        checkout_session = shop.checkout(cart)
-        return redirect(checkout_session.url)
-    except Exception as e:
-        return str(e)
+    # try:
+    cart = request.session.get('cart')
+    checkout_session = shop.checkout(cart)
+    return redirect(checkout_session.url)
+    # except Exception as e:
+    #     return str(e)
 
 
 def success(request: HttpRequest):

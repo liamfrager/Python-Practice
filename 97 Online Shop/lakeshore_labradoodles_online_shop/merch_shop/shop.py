@@ -45,7 +45,7 @@ class Printful():
     def get_variant(self, id: int) -> dict:
         '''Takes a Printful sync variant ID as an input and returns details on that variant.'''
         response = requests.get(
-            url=self.api_endpoint + 'store/variant/' + str(id),
+            url=self.api_endpoint + 'sync/variant/' + str(id),
             headers=self.api_headers,
         )
         return response.json()['result']['sync_variant']
@@ -138,27 +138,29 @@ class Shop():
             variant for variant in product['sync_variants'] if variant['color'] == color and variant['size'] == size)
         return variant
 
-    def get_cart(self, cart) -> list[dict]:
+    def get_cart(self, cart: dict) -> list[dict]:
         if cart == None:
             cart = {
-                'order_total': 0
+                'items': {},
+                'order_total': 0,
             }
         else:
-            for variant_id in cart:
-                cart_item = self.printful.get_variant(variant_id)
-                cart[variant_id] = {
+            for id, quantity in cart['items'].items():
+                cart_item = self.printful.get_variant(id)
+                cart['items'][id] = {
                     'name': cart_item['name'],
                     'price': float(cart_item['retail_price']),
-                    'total_price': float(cart_item['retail_price']) * int(cart[variant_id]['quantity']),
+                    'total_price': float(cart_item['retail_price']) * int(quantity),
                     'img': cart_item['files'][0]['thumbnail_url'],
-                    'quantity': cart[variant_id]['quantity'],
+                    'quantity': quantity,
                 }
-            cart['order_total'] = sum([cart[id]['total_price'] for id in cart])
+            cart['order_total'] = sum(
+                [cart['items'][id]['total_price'] for id in cart['items']])
         return cart
 
-    def checkout(self, cart) -> stripe.checkout.Session:
+    def checkout(self, cart: dict) -> stripe.checkout.Session:
         line_items = []
-        for id, quantity in cart:
+        for id, quantity in cart['items'].items():  # TOO MANY TO UNPACK
             variant = self.printful.get_variant(id)
             line_item = {
                 'price_data': {
@@ -166,7 +168,7 @@ class Shop():
                     'unit_amount': variant['retail_price'].replace('.', ''),
                     'product_data': {
                         'name': variant['name'],
-                        'description': '',
+                        'description': 'dEsCrIpTiON',  # TODO: Implement product descriptions
                         'images': [file['thumbnail_url'] for file in variant['files']],
                     },
                 },
