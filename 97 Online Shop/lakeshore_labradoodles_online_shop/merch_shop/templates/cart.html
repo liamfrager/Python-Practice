@@ -33,12 +33,17 @@
         </li>
       </ul>
       <div class="d-flex justify-content-end mt-1">
-        <a href="{% url 'checkout' %}" class="btn btn-primary">Checkout</a>
+        <a id="checkout" href="{% url 'checkout' %}" class="btn btn-primary" onclick="onCheckout">Checkout</a>
       </div>
     {% else %}
       <h6>Your cart is empty.</h6>
     {% endif %}
   </div>
+  <script>
+    function onCheckout() {
+      document.getElementById('checkout').innerHTML = `<div class="loader"></div>`
+    }
+  </script>
 {% endblock %}
 
 <!-- 

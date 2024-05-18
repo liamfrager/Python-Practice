@@ -160,7 +160,7 @@ class Shop():
 
     def checkout(self, cart: dict) -> stripe.checkout.Session:
         line_items = []
-        for id, quantity in cart['items'].items():  # TOO MANY TO UNPACK
+        for id, quantity in cart['items'].items():
             variant = self.printful.get_variant(id)
             line_item = {
                 'price_data': {

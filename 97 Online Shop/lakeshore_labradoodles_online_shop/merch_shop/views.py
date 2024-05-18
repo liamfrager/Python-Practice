@@ -53,7 +53,7 @@ def remove_from_cart(request: HttpRequest, variant_id):
     cart = request.session.get('cart')
     if cart == None:
         cart = {}
-    cart.pop(str(variant_id))
+    cart['items'].pop(str(variant_id))
     request.session['cart'] = cart
     request.session.modified = True
     return redirect('cart')
