@@ -115,10 +115,23 @@ class Shop():
                 variant['size'] for variant in sync['sync_variants']])],
         )
 
-        # Get product colors
+        preview_images = {}
+        size_prices = {}
         colors = []
         for variant in sync['sync_variants']:
-            # Get color from database or create
+            # Get product variant images
+            color = variant['color']
+            if color not in preview_images:
+                images = []
+                for file in variant['files']:
+                    images.append(file['preview_url'])
+                preview_images[color] = images
+            # Get product variant prices
+            size = variant['size']
+            if size not in size_prices:
+                price = variant['retail_price']
+                size_prices[size] = price
+            # Get product colors
             try:
                 color = Color.objects.get(name=variant['color'])
             except Color.DoesNotExist:
@@ -128,6 +141,10 @@ class Shop():
                         variant['product']['variant_id']),
                 )
             colors.append(color)
+
+        # Add preview_images, prices, and colors to product
+        product.preview_images = preview_images  # add preview images to product object
+        product.size_prices = size_prices  # add preview images to product object
         product.colors.set(set(colors))  # add unique colors to product object
         return product
 
@@ -160,7 +177,7 @@ class Shop():
 
     def checkout(self, cart: dict) -> stripe.checkout.Session:
         line_items = []
-        for id, quantity in cart['items'].items():
+        for id, quantity in cart['items'].items():  # TOO MANY TO UNPACK
             variant = self.printful.get_variant(id)
             line_item = {
                 'price_data': {

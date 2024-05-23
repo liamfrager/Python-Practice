@@ -4,12 +4,13 @@
     <h1>{{ product.name }}</h1>
     <div class="row">
       <div class="col-12 col-lg-8">
-        {% for color in product.colors.all %}
-          <div id="imageCarousel{{ forloop.counter }}" class="carousel carousel-dark slide" data-bs-interval="false" color="{{ color.name }}">
+        <!-- IMAGES -->
+        {% for color, images in product.preview_images.items %}
+          <div id="imageCarousel{{ forloop.counter }}" class="carousel carousel-dark slide" data-bs-interval="false" color="{{ color }}">
             <div class="carousel-inner">
-              {% for file in color.files %}
+              {% for image in images %}
                 <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                  <img src="{{ file.preview_url }}" class="d-block w-100" alt="product image">
+                  <img src="{{ image }}" class="d-block w-100" alt="product image">
                 </div>
               {% endfor %}
             </div>
@@ -25,7 +26,9 @@
         {% endfor %}
       </div>
       <div class="col-12 col-lg-4">
-        <h1 class="price">${{ 0 }}</h1>
+        {% for size, price in product.size_prices.items %}
+          <h1 id="{{ size }}" class="price">${{ price }}</h1>
+        {% endfor %}
         
         <form id="variant-form" action="{% url 'add_to_cart' %}" method="post">
           {% csrf_token %}
@@ -59,12 +62,18 @@
   <script>
     // On color select
     function onChange() {
+      color = document.querySelector('input[name="color"]:checked').value;
+      size = document.querySelector('#size option:checked').value;
       // Change price
-      
+      document.querySelectorAll('.price').forEach(elem => {
+        elem.hidden = true;
+      });
+      document.getElementById(size).hidden = false;
       // Change pictures
       document.querySelectorAll('.carousel').forEach(elem => {
         elem.hidden = true;
       });
+      document.querySelector(`.carousel[color="${color}"`).hidden = false;
     }
     // On add to cart
     function onSubmit() {

@@ -12,6 +12,8 @@ class Product(models.Model):
     name = models.CharField(max_length=100, default='')
     description = models.CharField(max_length=255, default='')
     image = models.URLField(default='')
+    preview_images = models.URLField(default='')
+    size_prices = models.CharField(max_length=10, default='0')
     colors = models.ManyToManyField(Color, default=None)
     sizes = models.CharField(max_length=4, null=True)
 
