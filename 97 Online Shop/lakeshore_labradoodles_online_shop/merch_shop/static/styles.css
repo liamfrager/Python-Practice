@@ -1,3 +1,7 @@
+/* * {
+    border: 1px solid red;
+} */
+
 .color-variant {
     height: 25px; 
     width: 25px;
@@ -9,11 +13,11 @@ input[name="color"]:checked + label {
     scale: 1.2
 }
 
-a.remove-from-cart {
+.hover-show {
     visibility: hidden;
 }
 
-.cart-item:hover a.remove-from-cart {
+.cart-item:hover .hover-show {
     visibility: visible;
 }
 

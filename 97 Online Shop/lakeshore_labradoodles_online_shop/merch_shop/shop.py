@@ -169,7 +169,7 @@ class Shop():
                     'price': float(cart_item['retail_price']),
                     'total_price': float(cart_item['retail_price']) * int(quantity),
                     'img': cart_item['files'][0]['thumbnail_url'],
-                    'quantity': quantity,
+                    'quantity': int(quantity),
                 }
             cart['order_total'] = sum(
                 [cart['items'][id]['total_price'] for id in cart['items']])
@@ -185,7 +185,7 @@ class Shop():
                     'unit_amount': variant['retail_price'].replace('.', ''),
                     'product_data': {
                         'name': variant['name'],
-                        'description': 'dEsCrIpTiON',  # TODO: Implement product descriptions
+                        'description': ' ',  # TODO: Implement product descriptions
                         'images': [file['thumbnail_url'] for file in variant['files']],
                     },
                 },

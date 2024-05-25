@@ -46,7 +46,7 @@ def add_to_cart(request: HttpRequest):
         request.session['cart'] = cart
         request.session.modified = True
         return redirect('cart')
-    return 'Could not add to cart.'  # TODO: add error handling
+    return 'Could not add to cart.'  # TODO: add better error handling
 
 
 def remove_from_cart(request: HttpRequest, variant_id):
@@ -57,6 +57,20 @@ def remove_from_cart(request: HttpRequest, variant_id):
     request.session['cart'] = cart
     request.session.modified = True
     return redirect('cart')
+
+
+def update_quantity(request: HttpRequest):
+    if request.method == 'POST':
+        variant_id = request.POST['variant_id']
+        quantity = request.POST['quantity']
+        cart = request.session.get('cart')
+        if cart == None:
+            cart = {}
+        cart['items'][variant_id] = quantity
+        request.session['cart'] = cart
+        request.session.modified = True
+        return redirect('cart')
+    return 'Could not add to cart.'  # TODO: add better error handling
 
 
 def checkout(request: HttpRequest):
