@@ -13,6 +13,11 @@ input[name="color"]:checked + label {
     scale: 1.2
 }
 
+.cart-item img {
+    width: 80px;
+    max-height: 80px;
+}
+
 .hover-show {
     visibility: hidden;
 }
