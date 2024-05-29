@@ -123,7 +123,7 @@ class Shop():
             color = variant['color']
             if color not in preview_images:
                 images = []
-                for file in variant['files']:
+                for file in variant['files'][1:]:  # skip first image
                     images.append(file['preview_url'])
                 preview_images[color] = images
             # Get product variant prices
