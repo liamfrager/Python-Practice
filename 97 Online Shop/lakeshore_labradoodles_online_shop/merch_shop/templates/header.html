@@ -1,7 +1,8 @@
 <nav class="navbar navbar-expand-md navbar-light fixed-top bg-light">
   <div class="container-fluid">
     <a class="navbar-brand" href="{% url 'home' %}">
-      <img src="https://lakeshorelabradoodles.com/wp-content/uploads/2019/09/lakeshorelabradoodles-new-logo.png" alt="Lakeshore Labradoodles Logo">
+      {% load static %}
+      <img src="{% static 'images/logo.png' %}" alt="Lakeshore Labradoodles Logo" height="100" class="p-1">
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
