@@ -82,6 +82,7 @@ def checkout(request: HttpRequest):
             shipping_address_collection={'allowed_countries': ['US']},
             success_url=YOUR_DOMAIN + '/success',
             cancel_url=YOUR_DOMAIN + '/cart',
+            metadata=cart['items']
         )
         return redirect(checkout_session.url)
     except Exception as e:

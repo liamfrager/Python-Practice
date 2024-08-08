@@ -1,8 +1,7 @@
-from decimal import Decimal
 import os
 import requests
 import stripe
-from .models import Product, Variant, Color
+from .models import Product, Color
 
 PRINTFUL_AUTH_TOKEN = os.getenv('PRINTFUL_AUTH_TOKEN')
 STRIPE_API_KEY = os.getenv('STRIPE_API_KEY')
@@ -59,12 +58,17 @@ class Printful():
         return response.json()['result']['variant']['color_code']
 
     def place_order(self, order):
-        response = requests.get(
+        response = requests.post(
             url=self.api_endpoint + 'orders',
             headers=self.api_headers,
-            body=order
+            json=order,
+            # Draft order without processing for fulfilliment. Used for testing.
+            params={'confirm': 'false'},
         )
-        return response.json()['result']['variant']['color_code']
+        if response.json()['code'] == 200:
+            user_email = order['recipient']['email']
+            print(user_email)
+        return response.json()
 
 
 class Stripe():
@@ -83,7 +87,6 @@ class Stripe():
                 'name': variant['name'],
                 'description': ' ',  # TODO: Implement product descriptions
                 'images': [file['thumbnail_url'] for file in variant['files']],
-                'metadata': {'variant_id': variant['id']}
             },
         }
         return price_data
@@ -198,7 +201,6 @@ class Shop():
             payment_intent=payment_intent.id,
             expand=['data.line_items'],
         ).data[0]
-        print(checkout_session)
         order = {
             'recipient': {
                 'name': checkout_session.shipping_details.name,
@@ -213,10 +215,10 @@ class Shop():
             },
             'items': [
                 {
-                    'variant_id': item.price.metadata['variant_id'],
-                    'quantity': item.quantity,
+                    'sync_variant_id': id,
+                    'quantity': quantity,
                 }
-                for item in checkout_session.line_items.data
+                for id, quantity in checkout_session.metadata.items()
             ],
             'packing_slip': {
                 'email': 'lakeshorelabradoodles@gmail.com',
