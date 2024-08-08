@@ -23,7 +23,7 @@ def product(request: HttpRequest, product_id):
 
 def cart(request: HttpRequest):
     cart = request.session.get('cart')
-    cart = shop.get_cart(cart)
+    cart = shop.get_cart_details(cart)
     return render(request, 'cart.html', {'cart': cart})
 
 
@@ -77,7 +77,7 @@ def checkout(request: HttpRequest):
         # TODO: verify that all items in the cart still exist/are in stock through printful.
         YOUR_DOMAIN = 'http://localhost:8000'
         checkout_session = stripe.checkout.Session.create(
-            line_items=shop.checkout(cart),
+            line_items=shop.get_line_items(cart),
             mode='payment',
             shipping_address_collection={'allowed_countries': ['US']},
             success_url=YOUR_DOMAIN + '/order_success',

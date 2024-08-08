@@ -2,7 +2,7 @@
 {% block content %}
   <div class="container">
     <h1 class="my-4">Cart</h1>
-    {% if cart %}
+    {% if cart.items %}
       <ul class="list-group list-group-flush">
         {% for id, product in cart.items.items %}
           <li class="list-group-item cart-item">
@@ -51,17 +51,23 @@
         {% endfor %}
         <li class="list-group-item">
           <div class="d-flex justify-content-between align-items-center">
-              <div>
-              </div>
-              <strong>Total<br>${{ cart.order_total|floatformat:2 }}</strong>
-            </div>
+            <span>Free Shipping</span>
+            <span>$0.00</span>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center">
+            <div></div>
+            <strong>Total<br>${{ cart.order_total|floatformat:2 }}</strong>
+          </div>
         </li>
       </ul>
       <div class="d-flex justify-content-end mt-1">
         <a id="checkout" href="{% url 'checkout' %}" class="btn btn-primary" onclick="onCheckout">Checkout</a>
       </div>
     {% else %}
-      <h6>Your cart is empty.</h6>
+      <span>Your cart is empty.</span>
+      <span>Click <a href="{% url 'home' %}">here</a> to browse our products.</span>
     {% endif %}
   </div>
   <script>

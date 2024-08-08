@@ -164,13 +164,8 @@ class Shop():
             variant for variant in product['sync_variants'] if variant['color'] == color and variant['size'] == size)
         return variant
 
-    def get_cart(self, cart: dict) -> list[dict]:
-        if not cart:
-            cart = {
-                'items': {},
-                'order_total': 0,
-            }
-        else:
+    def get_cart_details(self, cart: dict) -> list[dict]:
+        if cart:
             for id, quantity in cart['items'].items():
                 cart_item = self.printful.get_variant(id)
                 cart['items'][id] = {
@@ -184,7 +179,7 @@ class Shop():
                 [cart['items'][id]['total_price'] for id in cart['items']])
         return cart
 
-    def checkout(self, cart: dict) -> list:
+    def get_line_items(self, cart: dict) -> list:
         line_items = []
         for id, quantity in cart['items'].items():
             variant = self.printful.get_variant(id)
