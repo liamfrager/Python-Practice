@@ -14,8 +14,11 @@ class Product(models.Model):
     image = models.URLField(default='')
     preview_images = models.URLField(default='')
     size_prices = models.CharField(max_length=10, default='0')
-    colors = models.ManyToManyField(Color, default=None)
+    colors: list[Color] = None
     sizes = models.CharField(max_length=4, null=True)
+
+    class Meta:
+        managed = False
 
 
 class Variant(models.Model):
@@ -24,3 +27,6 @@ class Variant(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=5)
     color = models.ForeignKey(Color, on_delete=models.CASCADE)
     size = models.CharField(max_length=4)
+
+    class Meta:
+        managed = False

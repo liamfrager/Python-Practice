@@ -1,10 +1,8 @@
 import stripe
 import json
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
-from .models import Product, Variant
-import requests as req
-import os
+from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 from .shop import Shop
 load_dotenv()
@@ -74,26 +72,45 @@ def update_quantity(request: HttpRequest):
 
 
 def checkout(request: HttpRequest):
-    # try:
-    cart = request.session.get('cart')
-    checkout_session = shop.checkout(cart)
-    return redirect(checkout_session.url)
-    # except Exception as e:
-    #     return str(e)
+    try:
+        cart = request.session.get('cart')
+        # TODO: verify that all items in the cart still exist/are in stock through printful.
+        YOUR_DOMAIN = 'http://localhost:8000'
+        checkout_session = stripe.checkout.Session.create(
+            line_items=shop.checkout(cart),
+            mode='payment',
+            shipping_address_collection={'allowed_countries': ['US']},
+            success_url=YOUR_DOMAIN + '/success',
+            cancel_url=YOUR_DOMAIN + '/cart',
+        )
+        return redirect(checkout_session.url)
+    except Exception as e:
+        return str(e)
 
 
 def success(request: HttpRequest):
-    return redirect('success')
+    return render(request, 'success.html')
 
 
-# TODO: decide how to reconcile printful/stripe APIs
-# link printful product_id to stripe metadata?
-# how many extra API calls will this require?
-# would it be better to store it in a database? if so, how to maintain?
+# WEBHOOKS
+@csrf_exempt
+def stripe_webhooks(request: HttpRequest):
+    payload = request.body
+    event = None
 
-# TODO: display all products on home page
-# TODO: display product info on product page
-# TODO: get stripe price ids based on size (use price_data to dynamically create price (default + size bonus))
-# TODO: add ids to cart/cookies (how to keep track of color for ordering from printful? db model that connects printful/stripe ids)
+    try:
+        event = stripe.Event.construct_from(
+            json.loads(payload), stripe.api_key
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
 
-# TODO: CHECKOUT SESSION SHOULD CREATE PRODUCTS INLINE SO THAT PRODUCT DATA DOESN'T HAVE TO BE UPDATED ON BOTH PRINTFUL AND STRIPE.
+    # Handle the event
+    if event.type == 'payment_intent.succeeded':
+        payment_intent = event.data.object  # contains a stripe.PaymentIntent
+        shop.place_order(payment_intent)
+    else:
+        print('Unhandled event type {}'.format(event.type))
+
+    return HttpResponse(status=200)

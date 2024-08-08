@@ -58,6 +58,14 @@ class Printful():
         )
         return response.json()['result']['variant']['color_code']
 
+    def place_order(self, order):
+        response = requests.get(
+            url=self.api_endpoint + 'orders',
+            headers=self.api_headers,
+            body=order
+        )
+        return response.json()['result']['variant']['color_code']
+
 
 class Stripe():
     '''A class that interacts with the Stripe API. Initialize with Stripe API key to link this object with your account.'''
@@ -66,21 +74,19 @@ class Stripe():
         self.api_key = api_key
         stripe.api_key = self.api_key
 
-    def get_price(self, id) -> stripe.SearchResultObject[stripe.Price]:
-        '''Takes a Printful variant ID as an input and returns a stripe price object.'''
-        price = stripe.Price.search(
-            query=f"active:'true' AND metadata['printful_product_id']:'{id}'")
-        if price['data'] == []:
-            price = self.create_price()
-        print(price)
-        return price
-
-    def create_price(self):
-        stripe.Price.create(
-            currency="usd",
-            unit_amount=1000,
-            product_data={"name": "Gold Plan"},
-        )
+    def get_price_data(self, variant):
+        '''Takes a Printful variant as an input and returns a dictionary formatted as 'price-data' for the Stripe API session creation.'''
+        price_data = {
+            'currency': variant['currency'].lower(),
+            'unit_amount': variant['retail_price'].replace('.', ''),
+            'product_data': {
+                'name': variant['name'],
+                'description': ' ',  # TODO: Implement product descriptions
+                'images': [file['thumbnail_url'] for file in variant['files']],
+                'metadata': {'variant_id': variant['id']}
+            },
+        }
+        return price_data
 
 
 class Shop():
@@ -103,7 +109,7 @@ class Shop():
         return products
 
     def get_product(self, id: int) -> Product:
-        '''Takes Printful sync product ID as an input and returns its entry in the database or creates it if it doesn't exist.'''
+        '''Takes Printful sync product ID as returns a Product object with product details.'''
         sync = self.printful.get_product(id)
 
         # Create product object
@@ -145,7 +151,7 @@ class Shop():
         # Add preview_images, prices, and colors to product
         product.preview_images = preview_images  # add preview images to product object
         product.size_prices = size_prices  # add preview images to product object
-        product.colors.set(set(colors))  # add unique colors to product object
+        product.colors = set(colors)  # add unique colors to product object
         return product
 
     def get_variant(self, id, color, size) -> dict:
@@ -156,7 +162,7 @@ class Shop():
         return variant
 
     def get_cart(self, cart: dict) -> list[dict]:
-        if cart == None:
+        if not cart:
             cart = {
                 'items': {},
                 'order_total': 0,
@@ -175,32 +181,49 @@ class Shop():
                 [cart['items'][id]['total_price'] for id in cart['items']])
         return cart
 
-    def checkout(self, cart: dict) -> stripe.checkout.Session:
+    def checkout(self, cart: dict) -> list:
         line_items = []
-        for id, quantity in cart['items'].items():  # TOO MANY TO UNPACK
+        for id, quantity in cart['items'].items():
             variant = self.printful.get_variant(id)
             line_item = {
-                'price_data': {
-                    'currency': variant['currency'].lower(),
-                    'unit_amount': variant['retail_price'].replace('.', ''),
-                    'product_data': {
-                        'name': variant['name'],
-                        'description': ' ',  # TODO: Implement product descriptions
-                        'images': [file['thumbnail_url'] for file in variant['files']],
-                    },
-                },
+                'price_data': self.stripe.get_price_data(variant),
                 'quantity': quantity,
             }
             line_items.append(line_item)
-        # TODO: verify that all items in the cart still exist/are in stock through printful.
-        YOUR_DOMAIN = 'http://localhost:8000'
-        checkout_session = stripe.checkout.Session.create(
-            line_items=line_items,
-            mode='payment',
-            success_url=YOUR_DOMAIN + '/success',
-            cancel_url=YOUR_DOMAIN + '/cart',
-        )
-        return checkout_session
+        return line_items
 
-
-# TODO: rewrite all functions to not draw from database but straight from Printful. Should create model objects without saving to the database.
+    def place_order(self, payment_intent: stripe.PaymentIntent):
+        '''Takes a Stripe PaymentIntent object as an input and places an order on Printful.'''
+        checkout_session = stripe.checkout.Session.list(
+            payment_intent=payment_intent.id,
+            expand=['data.line_items'],
+        ).data[0]
+        print(checkout_session)
+        order = {
+            'recipient': {
+                'name': checkout_session.shipping_details.name,
+                'address1': checkout_session.shipping_details.address.line1,
+                'address2': checkout_session.shipping_details.address.line2,
+                'city': checkout_session.shipping_details.address.city,
+                'state_code': checkout_session.shipping_details.address.state,
+                'country_code': checkout_session.shipping_details.address.country,
+                'zip': checkout_session.shipping_details.address.postal_code,
+                'phone': checkout_session.customer_details.phone,
+                'email': checkout_session.customer_details.email,
+            },
+            'items': [
+                {
+                    'variant_id': item.price.metadata['variant_id'],
+                    'quantity': item.quantity,
+                }
+                for item in checkout_session.line_items.data
+            ],
+            'packing_slip': {
+                'email': 'lakeshorelabradoodles@gmail.com',
+                'phone': '+1(860)478-0267',
+                'message': 'Thank you for your purchase!',
+                'logo_url': '​http://www.your-domain.com/packing-logo.png',
+                'store_name': 'Lakeshore Labradoodles',
+            },
+        }
+        self.printful.place_order(order)

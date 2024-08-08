@@ -35,7 +35,7 @@
           <input type="text" name="product_id" value="{{ product.id }}" hidden>
           <!-- COLOR -->
           <div class="list-group-horizontal">
-            {% for color in product.colors.all %}
+            {% for color in product.colors %}
               {% if forloop.first %}
                 <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" onchange="onChange()" checked>
               {% else %}
