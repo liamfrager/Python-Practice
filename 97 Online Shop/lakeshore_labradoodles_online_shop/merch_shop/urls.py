@@ -11,7 +11,7 @@ urlpatterns = [
          views.remove_from_cart, name='remove_from_cart'),
     path('update_quantity', views.update_quantity, name='update_quantity'),
     path('checkout', views.checkout, name='checkout'),
-    path('success', views.success, name='success'),
+    path('order_success', views.order_success, name='order_success'),
     # WEBHOOKS
     path('stripe_webhooks', views.stripe_webhooks, name='stripe_webhooks')
 ]

@@ -80,17 +80,24 @@ def checkout(request: HttpRequest):
             line_items=shop.checkout(cart),
             mode='payment',
             shipping_address_collection={'allowed_countries': ['US']},
-            success_url=YOUR_DOMAIN + '/success',
+            success_url=YOUR_DOMAIN + '/order_success',
             cancel_url=YOUR_DOMAIN + '/cart',
             metadata=cart['items']
         )
+        request.session['order_success'] = True
         return redirect(checkout_session.url)
     except Exception as e:
+        del request.session['order_success']
         return str(e)
 
 
-def success(request: HttpRequest):
-    return render(request, 'success.html')
+def order_success(request: HttpRequest):
+    if not request.session.get('order_success'):
+        return redirect('home')
+    else:
+        del request.session['order_success']
+        del request.session['cart']
+        return render(request, 'success.html')
 
 
 # WEBHOOKS
