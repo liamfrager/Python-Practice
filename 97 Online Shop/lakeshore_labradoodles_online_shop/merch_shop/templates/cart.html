@@ -22,7 +22,7 @@
                     <input type="hidden" name="variant_id" value="{{ id }}">
                     <span>x</span>
                     <select name="quantity" id="{{ id }}" onchange="this.form.submit()">
-                      {% with ''|center:9 as range %}
+                      {% with ''|center:10 as range %}
                         {% for _ in range %}
                           {% with forloop.counter as i  %}
                           {% if i == product.quantity %}

@@ -23,7 +23,6 @@ def product(request: HttpRequest, product_id):
 
 def cart(request: HttpRequest):
     cart = request.session.get('cart')
-    cart = shop.get_cart_details(cart)
     return render(request, 'cart.html', {'cart': cart})
 
 
@@ -40,7 +39,15 @@ def add_to_cart(request: HttpRequest):
             request.POST['color'],
             request.POST['size'],
         )
-        cart['items'][variant['id']] = 1
+        cart['items'][variant['id']] = {
+            'name': variant['name'],
+            'price': float(variant['retail_price']),
+            'total_price': float(variant['retail_price']),
+            'img': variant['files'][0]['thumbnail_url'],
+            'quantity': 1,
+        }
+        cart['order_total'] = sum(
+            [cart['items'][id]['total_price'] for id in cart['items']])
         request.session['cart'] = cart
         request.session.modified = True
         return redirect('cart')
@@ -52,6 +59,8 @@ def remove_from_cart(request: HttpRequest, variant_id):
     if cart == None:
         cart = {}
     cart['items'].pop(str(variant_id))
+    cart['order_total'] = sum(
+        [cart['items'][id]['total_price'] for id in cart['items']])
     request.session['cart'] = cart
     request.session.modified = True
     return redirect('cart')
@@ -62,9 +71,11 @@ def update_quantity(request: HttpRequest):
         variant_id = request.POST['variant_id']
         quantity = request.POST['quantity']
         cart = request.session.get('cart')
-        if cart == None:
-            cart = {}
-        cart['items'][variant_id] = quantity
+        cart['items'][variant_id]['quantity'] = int(quantity)
+        cart['items'][variant_id]['total_price'] = cart['items'][variant_id]['price'] * \
+            int(quantity)
+        cart['order_total'] = sum(
+            [cart['items'][id]['total_price'] for id in cart['items']])
         request.session['cart'] = cart
         request.session.modified = True
         return redirect('cart')
@@ -82,13 +93,14 @@ def checkout(request: HttpRequest):
             shipping_address_collection={'allowed_countries': ['US']},
             success_url=YOUR_DOMAIN + '/order_success',
             cancel_url=YOUR_DOMAIN + '/cart',
-            metadata=cart['items']
+            metadata={id: item['quantity']
+                      for id, item in cart['items'].items()}
         )
         request.session['order_success'] = True
         return redirect(checkout_session.url)
     except Exception as e:
         del request.session['order_success']
-        return str(e)
+        return f'Could not checkout. An error occurred: {str(e)}'
 
 
 def order_success(request: HttpRequest):

@@ -164,28 +164,13 @@ class Shop():
             variant for variant in product['sync_variants'] if variant['color'] == color and variant['size'] == size)
         return variant
 
-    def get_cart_details(self, cart: dict) -> list[dict]:
-        if cart:
-            for id, quantity in cart['items'].items():
-                cart_item = self.printful.get_variant(id)
-                cart['items'][id] = {
-                    'name': cart_item['name'],
-                    'price': float(cart_item['retail_price']),
-                    'total_price': float(cart_item['retail_price']) * int(quantity),
-                    'img': cart_item['files'][0]['thumbnail_url'],
-                    'quantity': int(quantity),
-                }
-            cart['order_total'] = sum(
-                [cart['items'][id]['total_price'] for id in cart['items']])
-        return cart
-
     def get_line_items(self, cart: dict) -> list:
         line_items = []
-        for id, quantity in cart['items'].items():
+        for id, item in cart['items'].items():
             variant = self.printful.get_variant(id)
             line_item = {
                 'price_data': self.stripe.get_price_data(variant),
-                'quantity': quantity,
+                'quantity': item['quantity'],
             }
             line_items.append(line_item)
         return line_items
